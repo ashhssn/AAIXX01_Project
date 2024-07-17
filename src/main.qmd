@@ -16,7 +16,6 @@ knitr:
 ```{r}
 #| warning: false
 #| echo: false
-# Install and load required packages
 library(ncdf4)
 library(reshape2)
 library(plotly)
@@ -64,6 +63,7 @@ plot <- plot_ly(df_subset, type = "scattergeo", mode = "markers",
                 lon = ~lon, lat = ~lat,
                 marker = list(size = 10,
                               symbol = "square",
+                              opacity = 0.1,
                               color = ~anomaly,
                               colorscale = "Hot",
                               colorbar = list(title = "Temperature Anomaly (C)")),
@@ -87,7 +87,8 @@ plot <- plot_ly(df_subset, type = "scattergeo",
                 lon = ~lon, lat = ~lat,
                 marker = list(
                   size = 10,
-                  symbol = "square",
+                  symbol = "circle",
+                  opacity = 0.3,
                   color = ~anomaly,
                   colorscale = "Hot",
                   colorbar = list(title = "Temperature Anomaly (C)")
@@ -101,12 +102,8 @@ plot <- plot_ly(df_subset, type = "scattergeo",
         type = "orthographic",  # Use orthographic projection for 3D globe effect
         rotation = list(lon = 0, lat = 0, roll = 0)  # Set initial view
       ),
-      showland = TRUE,
-      landcolor = "rgb(212, 212, 212)",
       showcountries = TRUE,
-      countrycolor = "rgb(50, 50, 50)",
-      showocean = TRUE,
-      oceancolor = "rgb(0, 0, 255)"
+      countrycolor = "rgb(50, 50, 50)"
     )
   )
 
