@@ -13,10 +13,111 @@ knitr:
     message: false
 ---
 
+```{r}
+#| warning: false
+#| echo: false
+# Install and load required packages
+library(ncdf4)
+library(reshape2)
+library(plotly)
+
+# Open the NetCDF file
+ncfile <- nc_open("data/gistemp1200_GHCNv4_ERSSTv5.nc")
+
+# Extract variables
+lat <- ncvar_get(ncfile, "lat")
+lon <- ncvar_get(ncfile, "lon")
+time <- ncvar_get(ncfile, "time")
+anomaly <- ncvar_get(ncfile, "tempanomaly")
+
+# Extract attributes
+scale_factor <- ncatt_get(ncfile, "tempanomaly", "scale_factor")$value
+fill_value <- ncatt_get(ncfile, "tempanomaly", "_FillValue")$value
+
+# Convert time variable to date
+time_units <- ncatt_get(ncfile, "time", "units")$value
+origin <- as.Date(sub("days since ", "", time_units))
+date <- origin + time
+
+# Apply scale factor and handle missing values
+anomaly <- ifelse(anomaly == fill_value, NA, anomaly) * scale_factor
+
+# Reshape the data into a long format dataframe
+df <- expand.grid(lon = lon, lat = lat, time = date)
+df$anomaly <- as.vector(anomaly)
+
+# Close the NetCDF file
+nc_close(ncfile)
+
+# Display the first few rows of the dataframe
+head(df)
+
+
+# Assuming 'df' is already defined as your dataframe with temperature anomaly data
+
+# Filter data for the desired date (example date)
+date_to_plot <- as.Date("2024-04-15")
+df_subset <- df[df$time == date_to_plot, ]
+
+# Create the plot
+plot <- plot_ly(df_subset, type = "scattergeo", mode = "markers",
+                lon = ~lon, lat = ~lat,
+                marker = list(size = 10,
+                              symbol = "square",
+                              color = ~anomaly,
+                              colorscale = "Hot",
+                              colorbar = list(title = "Temperature Anomaly (C)")),
+                text = paste("Longitude: ", df_subset$lon, "<br>Latitude: ", df_subset$lat,
+                             "<br>Temperature Anomaly: ", df_subset$anomaly)) %>%
+  layout(
+    title = paste("Temperature Anomaly on", date_to_plot),
+    geo = list(
+      projection = list(type = "natural earth"),
+      showcountries = TRUE,  # Show country borders
+      countrycolor = "black",  # Country border color
+      showframe = FALSE
+    )
+  )
+
+# Show the plot
+plot
+
+# Create the 3D globe plot
+plot <- plot_ly(df_subset, type = "scattergeo",
+                lon = ~lon, lat = ~lat,
+                marker = list(
+                  size = 10,
+                  symbol = "square",
+                  color = ~anomaly,
+                  colorscale = "Hot",
+                  colorbar = list(title = "Temperature Anomaly (C)")
+                ),
+                text = paste("Longitude: ", df_subset$lon, "<br>Latitude: ", df_subset$lat,
+                             "<br>Temperature Anomaly: ", df_subset$anomaly)) %>%
+  layout(
+    title = paste("Temperature Anomaly on", date_to_plot),
+    geo = list(
+      projection = list(
+        type = "orthographic",  # Use orthographic projection for 3D globe effect
+        rotation = list(lon = 0, lat = 0, roll = 0)  # Set initial view
+      ),
+      showland = TRUE,
+      landcolor = "rgb(212, 212, 212)",
+      showcountries = TRUE,
+      countrycolor = "rgb(50, 50, 50)",
+      showocean = TRUE,
+      oceancolor = "rgb(0, 0, 255)"
+    )
+  )
+
+# Show the plot
+plot
+```
 
 ```{r}
 #| warning: false
 #| echo: false
+#| include: false
 
 library(terra)
 library(giscoR)
