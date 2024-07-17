@@ -12,7 +12,7 @@ knitr:
   opts_chunk:
     message: false
 ---
-
+# This one is done for the time being except the animation
 ```{r}
 #| warning: false
 #| echo: false
@@ -109,6 +109,68 @@ plot <- plot_ly(df_subset, type = "scattergeo",
 
 # Show the plot
 plot
+```
+
+# How to animate the plot
+```{r}
+#| warning: false
+#| echo: false
+library(ncdf4)
+library(reshape2)
+library(plotly)
+
+set.seed(123)  # Setting seed for reproducibility
+
+# Generate random data: Temperature anomalies over different years for specific locations
+n <- 100  # Number of data points
+df_subset <- data.frame(
+  lon = runif(n, min = -180, max = 180),  # Random longitudes
+  lat = runif(n, min = -90, max = 90),    # Random latitudes
+  year = sample(seq(2000, 2020, by = 5), n, replace = TRUE),  # Random years between 2000 and 2020
+  anomaly = runif(n, min = -5, max = 5)   # Random anomalies between -5 and 5 degrees Celsius
+)
+
+# Create the 3D globe plot
+plot <- plot_ly(df_subset) %>%
+  add_trace(
+    type = "scattergeo",
+    mode = "markers",
+    lon = ~lon,
+    lat = ~lat,
+    frame = ~year,
+    marker = list(
+      size = 10,
+      symbol = "circle",
+      opacity = 0.5,
+      color = ~anomaly,
+      colorscale = "RdBu",
+      colorbar = list(title = "Temperature Anomaly (°C)")
+    ),
+    text = ~paste("Longitude: ", lon, "<br>Latitude: ", lat, "<br>Temperature Anomaly: ", anomaly)
+  ) %>%
+  layout(
+    title = "Temperature Anomaly Over Time",
+    geo = list(
+      projection = list(
+        type = "orthographic",
+        rotation = list(lon = 0, lat = 0, roll = 0)
+      ),
+      showcountries = TRUE,
+      countrycolor = "rgb(50, 50, 50)"
+    )
+  ) %>%
+  animation_opts(
+    frame = 1000,  # Duration of each frame in milliseconds
+    transition = 0,  # Duration of transition between frames
+    easing = "linear"  # Animation easing function
+  ) %>%
+  animation_slider(
+    currentvalue = list(prefix = "Year: ", font = list(size = 20))
+  )
+
+# Show the plot
+plot
+
 ```
 
 ```{r}
