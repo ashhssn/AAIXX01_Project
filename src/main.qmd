@@ -178,3 +178,116 @@ plot <- plot_ly(df_subset) %>%
 plot
 
 ```
+
+```{r}
+# Load necessary libraries
+library(ncdf4)
+library(reshape2)
+library(plotly)
+library(dplyr)
+library(sf)
+library(rnaturalearth)
+
+# Open the NetCDF file
+ncfile <- nc_open("data/gistemp1200_GHCNv4_ERSSTv5.nc")
+
+# Extract variables
+lat <- ncvar_get(ncfile, "lat")
+lon <- ncvar_get(ncfile, "lon")
+time <- ncvar_get(ncfile, "time")
+anomaly <- ncvar_get(ncfile, "tempanomaly")
+
+# Extract attributes
+scale_factor <- ncatt_get(ncfile, "tempanomaly", "scale_factor")$value
+fill_value <- ncatt_get(ncfile, "tempanomaly", "_FillValue")$value
+
+# Convert time variable to date
+time_units <- ncatt_get(ncfile, "time", "units")$value
+origin <- as.Date(sub("days since ", "", time_units))
+date <- origin + time
+
+# Apply scale factor and handle missing values
+anomaly <- ifelse(anomaly == fill_value, NA, anomaly) * scale_factor
+
+# Reshape the data into a long format dataframe
+df <- expand.grid(lon = lon, lat = lat, time = date)
+df$anomaly <- as.vector(anomaly)
+
+# Close the NetCDF file
+nc_close(ncfile)
+
+# Display the first few rows of the dataframe
+head(df)
+
+# Filter data for the desired date (example date)
+date_to_plot <- as.Date("2024-04-15")
+df_subset <- df[df$time == date_to_plot, ]
+
+# Load country boundaries
+world <- ne_countries(scale = "medium", returnclass = "sf")
+
+# Convert the data to an sf object
+df_sf <- st_as_sf(df_subset, coords = c("lon", "lat"), crs = 4326)
+
+# Perform spatial join to add country names to the data
+df_with_country <- st_join(df_sf, world["name"])
+
+# Extract the coordinates back into separate columns
+df_with_country <- df_with_country %>%
+  mutate(lon = st_coordinates(.)[,1],
+         lat = st_coordinates(.)[,2])
+
+# Create the plot
+plot <- plot_ly(df_with_country, type = "scattergeo", mode = "markers",
+                lon = ~lon, lat = ~lat,
+                marker = list(size = 10,
+                              symbol = "square",
+                              opacity = 0.1,
+                              color = ~anomaly,
+                              colorscale = "RdBu",
+                              colorbar = list(title = "Temperature Anomaly (C)")),
+                text = ~paste("Country: ", name, "<br>Longitude: ", lon, "<br>Latitude: ", lat,
+                              "<br>Temperature Anomaly: ", anomaly)) %>%
+  layout(
+    title = paste("Temperature Anomaly on", date_to_plot),
+    geo = list(
+      projection = list(type = "natural earth"),
+      showcountries = TRUE,  # Show country borders
+      countrycolor = "black",  # Country border color
+      countrywidth = 1.5,  # Increase the country border weight
+      showframe = FALSE
+    )
+  )
+
+# Show the plot
+plot
+
+# Create the 3D globe plot with country hover information
+plot <- plot_ly(df_with_country, type = "scattergeo",
+                lon = ~lon, lat = ~lat,
+                marker = list(
+                  size = 10,
+                  symbol = "circle",
+                  opacity = 0.5,
+                  color = ~anomaly,
+                  colorscale = "RdBu",
+                  colorbar = list(title = "Temperature Anomaly (C)")
+                ),
+                text = ~paste("Country: ", name, "<br>Longitude: ", lon, "<br>Latitude: ", lat,
+                              "<br>Temperature Anomaly: ", anomaly)) %>%
+  layout(
+    title = paste("Temperature Anomaly on", date_to_plot),
+    geo = list(
+      projection = list(
+        type = "orthographic",  # Use orthographic projection for 3D globe effect
+        rotation = list(lon = 0, lat = 0, roll = 0)  # Set initial view
+      ),
+      showcountries = TRUE,
+      countrycolor = "rgb(50, 50, 50)",
+      countrywidth = 1.5  # Increase the country border weight
+    )
+  )
+
+# Show the plot
+plot
+```
