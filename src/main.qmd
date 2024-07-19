@@ -91,6 +91,74 @@ head(df)
 
 ```
 
+# Data Cleaning
+```{r}
+library(dplyr)
+library(zoo)
+
+# Filter the data for years 1960 to 2024
+df_filtered <- df[df$time >= as.Date("1960-01-01") & df$time <= as.Date("2024-12-31"), ]
+
+# Display the first few rows of the filtered dataframe
+head(df_filtered)
+
+# Check if there are any NA values in the dataframe
+any_na <- any(is.na(df_filtered))
+cat("Are there any NA values in the dataframe? ", any_na, "\n")
+
+# Count the number of NA values for each column
+na_count <- colSums(is.na(df_filtered))
+print("Number of NA values in each column:")
+print(na_count)
+
+# Inspect rows with NA values (optional, only if needed for deeper inspection)
+na_rows <- df_filtered[!complete.cases(df_filtered), ]
+print(head(na_rows))
+
+# Impute missing values using linear interpolation
+df_filtered_interpolated <- df_filtered
+df_filtered_interpolated$anomaly <- na.approx(df_filtered_interpolated$anomaly, na.rm = FALSE)
+
+any_na_interpolated <- any(is.na(df_filtered_interpolated))
+na_count_interpolated <- colSums(is.na(df_filtered_interpolated))
+cat("Number of NA values in each column after interpolation:\n")
+print(na_count_interpolated)
+cat("First few rows after interpolation:\n")
+print(head(df_filtered_interpolated))
+
+# Finding Mean Temp anomaly for each year
+# Step 1: Extract the year from the date in the df_filtered_interpolated dataframe
+df_filtered_interpolated <- df_filtered_interpolated |>
+  mutate(year = as.numeric(format(time, "%Y")))
+
+# Step 2: Group by year
+# Step 3: Calculate the mean temperature anomaly for each year
+yearly_mean_anomaly <- df_filtered_interpolated |>
+  group_by(year, lon, lat) %>%
+  summarize(mean_anomaly = mean(anomaly, na.rm = TRUE), .groups = 'drop')
+
+# Ensure the year column is of type character for plotly
+yearly_mean_anomaly$year <- as.character(yearly_mean_anomaly$year)
+
+# Print structure and summary of the dataframe
+cat("Structure of yearly_mean_anomaly dataframe:\n")
+str(yearly_mean_anomaly)
+
+cat("\nSummary of yearly_mean_anomaly dataframe:\n")
+summary(yearly_mean_anomaly)
+
+# Print first few rows of the dataframe
+cat("\nFirst few rows of yearly_mean_anomaly dataframe:\n")
+print(head(yearly_mean_anomaly))
+
+# Check if all columns have the same length
+cat("\nLength of each column in yearly_mean_anomaly dataframe:\n")
+cat("Year column length: ", length(yearly_mean_anomaly$year), "\n")
+cat("Lon column length: ", length(yearly_mean_anomaly$lon), "\n")
+cat("Lat column length: ", length(yearly_mean_anomaly$lat), "\n")
+cat("Mean anomaly column length: ", length(yearly_mean_anomaly$mean_anomaly), "\n")
+```
+
 
 ```{r}
 #| warning: false
