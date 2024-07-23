@@ -120,31 +120,6 @@ print(head(na_rows))
 df_filtered_interpolated <- df_filtered
 df_filtered_interpolated$anomaly <- na.approx(df_filtered_interpolated$anomaly, na.rm = FALSE)
 
-# Add a column to identify the type of data
-df_filtered$type <- "Original"
-df_filtered_interpolated$type <- "Interpolated"
-
-# Combine the original and interpolated data
-df_combined <- bind_rows(df_filtered, df_filtered_interpolated)
-
-# Ensure the combined dataframe has the same structure
-df_combined <- df_combined %>%
-  select(lon, lat, time, anomaly, type)
-
-# Summarize mean anomaly per year for both original and interpolated data
-df_combined_summary <- df_combined %>%
-  mutate(year = as.numeric(format(time, "%Y"))) %>%
-  group_by(year, type) %>%
-  summarize(mean_anomaly = mean(anomaly, na.rm = TRUE), .groups = 'drop')
-
-# Create the line graph using ggplot2
-ggplot(df_combined_summary, aes(x = year, y = mean_anomaly, color = type)) +
-  geom_line() +
-  labs(title = "Temperature Anomaly Trend Before and After Interpolation",
-       x = "Year",
-       y = "Mean Temperature Anomaly") +
-  theme_minimal()
-
 any_na_interpolated <- any(is.na(df_filtered_interpolated))
 na_count_interpolated <- colSums(is.na(df_filtered_interpolated))
 cat("Number of NA values in each column after interpolation:\n")
@@ -184,4 +159,28 @@ cat("Lon column length: ", length(yearly_mean_anomaly$lon), "\n")
 cat("Lat column length: ", length(yearly_mean_anomaly$lat), "\n")
 cat("Mean anomaly column length: ", length(yearly_mean_anomaly$mean_anomaly), "\n")
 
+# Add a column to identify the type of data
+df_filtered$type <- "Original"
+df_filtered_interpolated$type <- "Interpolated"
+
+# Combine the original and interpolated data
+df_combined <- bind_rows(df_filtered, df_filtered_interpolated)
+
+# Ensure the combined dataframe has the same structure
+df_combined <- df_combined %>%
+  select(lon, lat, time, anomaly, type)
+
+# Summarize mean anomaly per year for both original and interpolated data
+df_combined_summary <- df_combined %>%
+  mutate(year = as.numeric(format(time, "%Y"))) %>%
+  group_by(year, type) %>%
+  summarize(mean_anomaly = mean(anomaly, na.rm = TRUE), .groups = 'drop')
+
+# Create the line graph using ggplot2
+ggplot(df_combined_summary, aes(x = year, y = mean_anomaly, color = type)) +
+  geom_line() +
+  labs(title = "Temperature Anomaly Trend Before and After Interpolation",
+       x = "Year",
+       y = "Mean Temperature Anomaly") +
+  theme_minimal()
 ```
