@@ -1,5 +1,6 @@
 ---
 title: "team_04.qmd"
+runtime: shiny
 format: 
   html:
     toc: true
@@ -322,4 +323,185 @@ plot <- plot_ly(df_with_country,
 
 # Show the plot
 plot
+```
+
+
+
+Testing 
+```{r}
+df <- read.csv("data/clean_data.csv")
+
+# Function to calculate the moving average
+moving_average <- function(x, n = 5){
+  stats::filter(x, rep(1/n, n), sides = 2)
+}
+
+# Apply moving average to the mean_anomaly column
+df <- df %>%
+  arrange(year, lon, lat) %>%
+  group_by(lon, lat) %>%
+  mutate(mean_anomaly_smoothed = moving_average(mean_anomaly, n = 5))
+
+# Remove NA values that result from the moving average calculation
+df <- df %>% filter(!is.na(mean_anomaly_smoothed))
+
+# Create the plot with animation
+plot <- plot_ly(df,
+  type = "scattergeo", mode = "markers",
+  lon = ~lon, lat = ~lat,
+  frame = ~year,  # Add this line for animation
+  marker = list(
+    size = 10,
+    symbol = "square",
+    opacity = 0.4,
+    color = ~mean_anomaly_smoothed,
+    colorscale = "RdBu",
+    colorbar = list(title = "Temperature Anomaly (C)")
+  ),
+  text = ~paste(
+    "Longitude: ", lon, "<br>Latitude: ", lat,
+    "<br>Temperature Anomaly: ", mean_anomaly_smoothed
+  )
+) %>%
+  layout(
+    title = "Temperature Anomaly Over Time",
+    geo = list(
+      projection = list(type = "natural earth"),
+      showcountries = TRUE,
+      countrycolor = "black",
+      showframe = FALSE
+    )
+  )
+
+# Show the plot
+plot
+
+```
+
+
+```{r}
+
+# Aggregate data by year and calculate the average temperature anomaly
+df_aggregated <- df %>%
+  group_by(year) %>%
+  summarize(mean_anomaly = mean(mean_anomaly, na.rm = TRUE))
+
+# Display the aggregated data
+head(df_aggregated)
+
+```
+
+```{r}
+
+
+# Plot the average temperature anomaly over time with a trend curve
+ggplot(df_aggregated, aes(x = year, y = mean_anomaly)) +
+  geom_line(color = "blue") +
+  geom_point(color = "red") +
+  geom_smooth(method = "loess", color = "darkgreen", se = FALSE) +
+  labs(title = "Average Temperature Anomaly Over Time",
+       x = "Year",
+       y = "Average Temperature Anomaly (C)") +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(size = 14, face = "bold"),
+    axis.title.x = element_text(size = 12),
+    axis.title.y = element_text(size = 12),
+    axis.text.x = element_text(size = 10),
+    axis.text.y = element_text(size = 10),
+    plot.margin = margin(10, 10, 10, 10)
+  ) +
+  coord_cartesian(xlim = c(min(df_aggregated$year), max(df_aggregated$year)))
+```
+
+
+Testing slider with filter
+```{r}
+library(shiny)
+# Load the data
+df <- read.csv("data/clean_data.csv")
+
+# Function to calculate the moving average
+moving_average <- function(x, n = 5){
+  stats::filter(x, rep(1/n, n), sides = 2)
+}
+
+# Apply moving average to the mean_anomaly column
+df <- df %>%
+  arrange(year, lon, lat) %>%
+  group_by(lon, lat) %>%
+  mutate(mean_anomaly_smoothed = moving_average(mean_anomaly, n = 5))
+
+# Remove NA values that result from the moving average calculation
+df <- df %>% filter(!is.na(mean_anomaly_smoothed))
+
+# Calculate cumulative sum of smoothed anomalies for each location over time
+df <- df %>%
+  arrange(lon, lat, year) %>%
+  group_by(lon, lat) %>%
+  mutate(cumulative_anomaly = cumsum(mean_anomaly_smoothed))
+
+# Calculate max and min for color scaling
+max_anomaly <- max(df$mean_anomaly, na.rm = TRUE)
+min_anomaly <- -max_anomaly
+
+# Shiny UI
+ui <- fluidPage(
+  titlePanel("Temperature Anomaly Visualization"),
+  sidebarLayout(
+    sidebarPanel(
+      selectInput("metric", "Select Metric:", 
+                  choices = c("Mean Anomaly" = "mean_anomaly",
+                              "Smoothed Anomaly" = "mean_anomaly_smoothed",
+                              "Cumulative Anomaly" = "cumulative_anomaly")),
+      sliderInput("year", "Year:", 
+                  min = min(df$year), max = max(df$year), value = min(df$year), 
+                  step = 1, animate = animationOptions(interval = 1000, loop = FALSE))
+    ),
+    mainPanel(
+      plotlyOutput("anomalyPlot")
+    )
+  )
+)
+
+# Shiny Server
+server <- function(input, output) {
+  output$anomalyPlot <- renderPlotly({
+    df_filtered <- df %>% filter(year == input$year)
+    
+    plot <- plot_ly(df_filtered,
+      type = "scattergeo", mode = "markers",
+      lon = ~lon, lat = ~lat,
+      marker = list(
+        size = 10,
+        symbol = "square",
+        opacity = 0.4,
+        color = as.formula(paste0("~", input$metric)),
+        colorscale = "RdBu",
+        cmax = max_anomaly,
+        cmin = min_anomaly,
+        colorbar = list(title = "Temperature Anomaly (C)")
+      ),
+      text = ~paste(
+        "Longitude: ", lon, "<br>Latitude: ", lat,
+        "<br>Temperature Anomaly: ", get(input$metric)
+      )
+    ) %>%
+    layout(
+      title = paste(input$metric, "Over Time"),
+      geo = list(
+        projection = list(type = "natural earth"),
+        showcountries = TRUE,
+        countrycolor = "black",
+        showframe = FALSE
+      )
+    )
+    
+    plot
+  })
+}
+
+# Run the application 
+shinyApp(ui = ui, server = server)
+
 ```
