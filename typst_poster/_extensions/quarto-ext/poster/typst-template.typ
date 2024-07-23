@@ -27,7 +27,7 @@
   footer_email_ids: "Email IDs (separated by commas)",
 
   // Color of the footer.
-  footer_color: "Hex Color Code",
+  footer_color: "CDEBC5",
 
   // DEFAULTS
   // ========
@@ -67,7 +67,7 @@
   body
 ) = {
   // Set the body font.
-  set text(font: "STIX Two Text", size: 20pt)
+  set text(font: "Calibri", size: 20pt)
   let sizes = size.split("x")
   let width = int(sizes.at(0)) * 1in
   let height = int(sizes.at(1)) * 1in
@@ -86,7 +86,7 @@
     width: width,
     height: height,
     margin: 
-      (top: 1in, left: 2in, right: 2in, bottom: 2in),
+      (top: 1in, left: 1in, right: 1in, bottom: 2in),
     footer: [
       #set align(center)
       #set text(32pt)
@@ -103,7 +103,8 @@
           #text(font: "Courier", size: footer_url_font_size, footer_email_ids)
         ]
       )
-    ]
+    ],
+    background: image("images/Earth.png")
   )
 
   // Configure equation numbering and spacing.
@@ -168,7 +169,7 @@
       row-gutter: 50pt,
       image(univ_logo, width: univ_logo_scale),
       text(title_font_size, title + "\n\n") + 
-      text(authors_font_size, emph(authors) + departments),
+      text(authors_font_size, emph(authors) + departments ),
     )
   )
 
