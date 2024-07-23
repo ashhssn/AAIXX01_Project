@@ -353,7 +353,7 @@
 //   - https://github.com/typst/templates
 
 #show: doc => poster(
-   title: [Visualizing Climate Change over the World], 
+   title: [Visualizing Climate Change across the World], 
   // TODO: use Quarto's normalized metadata.
    authors: [A. Hussin, N. Ong, O. C. Wong, S. Chan, X. Y. Lim], 
    departments: [~], 
@@ -425,11 +425,11 @@ In this project, we expanded upon a visualization of global temperature anomalie
 = Original Visualization
 <original-visualization>
 #figure([
-#box(width: 110%,image("./images/global_land_and_sea.png"))
+#box(width: 100%,image("./images/NOAA_heatmap.png"))
 ], caption: figure.caption(
 position: bottom, 
 [
-Global temperature deviation from the 20th century average temperature of 13.9°C from 1850 to 2023, published by the NOAA.
+Land and Sea Surface Temperature Deviations in 2023 from the 1991-2020 Average Temperature of 14.4°C, published by the NOAA.
 ]), 
 kind: "quarto-float-fig", 
 supplement: "Figure", 
@@ -440,33 +440,27 @@ numbering: "1",
 
 = Critical Assessment of the Original Visualization
 <critical-assessment-of-the-original-visualization>
-+ Lack of Detail: The chart does not provide specific values for each year, making it difficult to discern exact temperature anomalies.
-
-+ Color Choice: The use of red and blue colors to represent positive and negative temperature anomalies may not be accessible to colorblind users.
-
 + Comparison to Baseline: The graph shows anomalies relative to a baseline, but it does not specify what this baseline is.
 
-+ Interactivity: The visualization lacks interactive features that would allow users to explore the data further, such as hovering over data points to see exact values, or filtering by time periods.
++ Interactivity: The visualization lacks interactive features that would allow users to explore the data further, such as hovering over data points to see exact values and region.
+
++ Grid and Colour Legend: The grid and colour legend is rather coarse, which does not allow viewers to distinguish between closer temperature differences and close regions.
 
 = Suggested Improvements
 <suggested-improvements>
-+ Detailed Axis: Include specific temperature values for each year to provide more context and clarity.
-
-+ Color Accessibility: Use a color palette that is accessible to colorblind users, such as a combination of blue and orange.
-
 + Baseline Information: Clearly indicate the baseline temperature to provide a reference point for interpreting the data.
 
 + Interactive Features: Implement interactive elements that allow users to explore the data in more detail, such as tooltips and filters.
 
-+ Dynamic Range Slider: A dynamic range slider will be added, allowing users to zoom into specific periods for detailed analysis or display a timelapse of temperature changes from 1930 to 2023.
++ More Granular Grid and Colour Legend: Use a smaller grid size and more granular colour scale to better differentiate between small temperature anomalies in close regions.
 
-+ Heatmap Overlay: A heatmap overlay will be added to visualize temperature anomalies across different regions of the world, providing a more comprehensive view of global warming.
++ Dynamic Range Slider: A dynamic range slider will be added, allowing users to zoom into specific periods for detailed analysis or display a timelapse of temperature changes from 1930 to 2023.
 
 = Implementation
 <implementation>
 == Data
 <data>
-The data was obtained from Kaggle#super[3];. This data set contains gridded mean temperature anomalies from the Global Historical Climatology Network-Monthly \(GHCN-M) version 3.2.1 temperature data set from the years 1880 to 2016 on a monthly frequency. The gridded anomalies were produced from GHCN-M bias corrected data. Each month of data consists of 2,592 gridded data points produced on a 5° by 5° basis for the entire globe \(72 longitude by 36 latitude grid boxes).
+The gridded surface air temperature anomaly data was obtained from NASA#super[3];. The data is in NetCDF format and contains selected series on a regular 2°× 2° grid.
 
 == Software
 <software>
@@ -479,6 +473,8 @@ We used the Quarto publication framework and the R programming language, along w
 - sf: Works with spatial data \(Shapefiles)
 - rnaturalearth: Provides pre-made geographic datasets \(maps)
 
+== Workflow
+<workflow>
 = Improved Visualization
 <improved-visualization>
 = Further Improvements
@@ -487,10 +483,10 @@ The visualization can be enhanced by showing additional data, such as sea ice co
 
 = Conclusion
 <conclusion>
-In summary, several key enhancements were made to the global temperature anomalies graph to improve its clarity, accessibility, and interactivity. Specific temperature values were added to the axis for more precise context, and a color palette suitable for colorblind users was implemented. The baseline temperature was clearly indicated to provide a reference point for interpreting the data. Interactive features such as tooltips and filters, along with a dynamic range slider, were introduced to allow users to explore the data in more detail and focus on specific periods. Additionally, a heatmap overlay was added to visualize temperature anomalies across different regions, offering a more comprehensive view of global warming. These improvements make the graph a more effective tool for communicating the reality and urgency of climate change.
+In summary, several key enhancements were made to the global temperature anomalies graph to improve its clarity, accessibility, and interactivity. The baseline temperature was clearly indicated to provide a reference point for interpreting the data. Interactive features such as tooltips and filters, along with a dynamic range slider, were introduced to allow users to explore the data in more detail and focus on specific periods. These improvements make the graph a more effective tool for communicating the reality and urgency of climate change.
 
 = References
 <references>
 + #link("https://www.ncei.noaa.gov/access/monitoring/monthly-report/global/202313")[NOAA]
 + #link("https://www.weforum.org/agenda/2020/01/climate-science-global-warming-most-sceptics-country/")[World Economic Forum]
-+ #link("https://www.kaggle.com/datasets/noaa/global-historical-climatology-network?resource=download")[Kaggle]
++ #link("https://data.giss.nasa.gov/gistemp/")[Land-Ocean Temperature Index, ERSSTv5, 1200km smoothing, NASA]
