@@ -95,6 +95,7 @@ head(df)
 ```{r}
 library(dplyr)
 library(zoo)
+library(naniar)
 
 # Filter the data for years 1960 to 2024
 df_filtered <- df[df$time >= as.Date("1960-01-01") & df$time <= as.Date("2024-12-31"), ]
@@ -118,6 +119,31 @@ print(head(na_rows))
 # Impute missing values using linear interpolation
 df_filtered_interpolated <- df_filtered
 df_filtered_interpolated$anomaly <- na.approx(df_filtered_interpolated$anomaly, na.rm = FALSE)
+
+# Add a column to identify the type of data
+df_filtered$type <- "Original"
+df_filtered_interpolated$type <- "Interpolated"
+
+# Combine the original and interpolated data
+df_combined <- bind_rows(df_filtered, df_filtered_interpolated)
+
+# Ensure the combined dataframe has the same structure
+df_combined <- df_combined %>%
+  select(lon, lat, time, anomaly, type)
+
+# Summarize mean anomaly per year for both original and interpolated data
+df_combined_summary <- df_combined %>%
+  mutate(year = as.numeric(format(time, "%Y"))) %>%
+  group_by(year, type) %>%
+  summarize(mean_anomaly = mean(anomaly, na.rm = TRUE), .groups = 'drop')
+
+# Create the line graph using ggplot2
+ggplot(df_combined_summary, aes(x = year, y = mean_anomaly, color = type)) +
+  geom_line() +
+  labs(title = "Temperature Anomaly Trend Before and After Interpolation",
+       x = "Year",
+       y = "Mean Temperature Anomaly") +
+  theme_minimal()
 
 any_na_interpolated <- any(is.na(df_filtered_interpolated))
 na_count_interpolated <- colSums(is.na(df_filtered_interpolated))
@@ -157,237 +183,5 @@ cat("Year column length: ", length(yearly_mean_anomaly$year), "\n")
 cat("Lon column length: ", length(yearly_mean_anomaly$lon), "\n")
 cat("Lat column length: ", length(yearly_mean_anomaly$lat), "\n")
 cat("Mean anomaly column length: ", length(yearly_mean_anomaly$mean_anomaly), "\n")
-```
 
-
-```{r}
-#| warning: false
-#| echo: false
-#| label: plot-1
-
-
-# Assuming 'df' is already defined as your dataframe with temperature anomaly data
-
-# Filter data for the desired date (example date)
-date_to_plot <- as.Date("2024-04-15")
-df_subset <- df[df$time == date_to_plot, ]
-
-# Create the plot
-plot <- plot_ly(df_subset,
-  type = "scattergeo", mode = "markers",
-  lon = ~lon, lat = ~lat,
-  marker = list(
-    size = 10,
-    symbol = "square",
-    opacity = 0.1,
-    color = ~anomaly,
-    colorscale = "RdBu",
-    colorbar = list(title = "Temperature Anomaly (C)")
-  ),
-  text = paste(
-    "Longitude: ", df_subset$lon, "<br>Latitude: ", df_subset$lat,
-    "<br>Temperature Anomaly: ", df_subset$anomaly
-  )
-) %>%
-  layout(
-    title = paste("Temperature Anomaly on", date_to_plot),
-    geo = list(
-      projection = list(type = "natural earth"),
-      showcountries = TRUE, # Show country borders
-      countrycolor = "black", # Country border color
-      showframe = FALSE
-    )
-  )
-
-# Show the plot
-plot
-```
-
-```{r}
-#| warning: false
-#| echo: false
-#| label: plot-2
-
-# Create the 3D globe plot
-plot <- plot_ly(df_subset,
-  type = "scattergeo",
-  lon = ~lon, lat = ~lat,
-  marker = list(
-    size = 10,
-    symbol = "circle",
-    opacity = 0.5,
-    color = ~anomaly,
-    colorscale = "RdBu",
-    colorbar = list(title = "Temperature Anomaly (C)")
-  ),
-  text = paste(
-    "Longitude: ", df_subset$lon, "<br>Latitude: ", df_subset$lat,
-    "<br>Temperature Anomaly: ", df_subset$anomaly
-  )
-) %>%
-  layout(
-    title = paste("Temperature Anomaly on", date_to_plot),
-    geo = list(
-      projection = list(
-        type = "orthographic", # Use orthographic projection for 3D globe effect
-        rotation = list(lon = 0, lat = 0, roll = 0) # Set initial view
-      ),
-      showcountries = TRUE,
-      countrycolor = "rgb(50, 50, 50)"
-    )
-  )
-
-# Show the plot
-plot
-```
-
-# How to animate the plot
-```{r}
-#| warning: false
-#| echo: false
-#| label: plot-sampled-data
-
-
-set.seed(123) # Setting seed for reproducibility
-
-# Generate random data: Temperature anomalies over different years for specific locations
-n <- 100 # Number of data points
-df_sample <- data.frame(
-  lon = runif(n, min = -180, max = 180), # Random longitudes
-  lat = runif(n, min = -90, max = 90), # Random latitudes
-  year = sample(seq(2000, 2020, by = 5), n, replace = TRUE), # Random years between 2000 and 2020
-  anomaly = runif(n, min = -5, max = 5) # Random anomalies between -5 and 5 degrees Celsius
-)
-
-df_sample$geographical_zone <- mapply(categorize_location, df_sample$lat, df_sample$lon)
-
-# Create the 3D globe plot
-plot <- plot_ly(df_sample) %>%
-  add_trace(
-    type = "scattergeo",
-    mode = "markers",
-    lon = ~lon,
-    lat = ~lat,
-    frame = ~year,
-    marker = list(
-      size = 10,
-      symbol = "circle",
-      opacity = 0.5,
-      color = ~anomaly,
-      colorscale = "RdBu",
-      colorbar = list(title = "Temperature Anomaly (°C)")
-    ),
-    text = ~ paste("Longitude: ", lon, "<br>Latitude: ", lat, "<br>Temperature Anomaly: ", anomaly)
-  ) %>%
-  layout(
-    title = "Temperature Anomaly Over Time",
-    geo = list(
-      projection = list(
-        type = "orthographic",
-        rotation = list(lon = 0, lat = 0, roll = 0)
-      ),
-      showcountries = TRUE,
-      countrycolor = "rgb(50, 50, 50)"
-    )
-  ) %>%
-  animation_opts(
-    frame = 1000, # Duration of each frame in milliseconds
-    transition = 0, # Duration of transition between frames
-    easing = "linear" # Animation easing function
-  ) %>%
-  animation_slider(
-    currentvalue = list(prefix = "Year: ", font = list(size = 20))
-  )
-
-# Show the plot
-plot
-```
-
-```{r}
-#| warning: false
-#| echo: false
-#| label: choropleth-country-plot
-
-# Load country boundaries
-world <- ne_countries(scale = "medium", returnclass = "sf")
-
-# Convert the data to an sf object
-df_sf <- st_as_sf(df_sample, coords = c("lon", "lat"), crs = 4326)
-
-# Perform spatial join to add country names to the data
-df_with_country <- st_join(df_sf, world["name"])
-
-# Extract the coordinates back into separate columns
-df_with_country <- df_with_country %>%
-  mutate(
-    lon = st_coordinates(.)[, 1],
-    lat = st_coordinates(.)[, 2]
-  )
-
-# Create the plot
-plot <- plot_ly(df_with_country,
-  type = "scattergeo", mode = "markers",
-  lon = ~lon, lat = ~lat,
-  marker = list(
-    size = 10,
-    symbol = "square",
-    opacity = 0.1,
-    color = ~anomaly,
-    colorscale = "RdBu",
-    colorbar = list(title = "Temperature Anomaly (C)")
-  ),
-  text = ~ paste(
-    "Country: ", name, "<br>Longitude: ", lon, "<br>Latitude: ", lat,
-    "<br>Temperature Anomaly: ", anomaly, "<br>Geographical Zone: ", geographical_zone
-  )
-) %>%
-  layout(
-    title = paste("Temperature Anomaly on", date_to_plot),
-    geo = list(
-      projection = list(type = "natural earth"),
-      showcountries = TRUE, # Show country borders
-      countrycolor = "black", # Country border color
-      countrywidth = 1.5, # Increase the country border weight
-      showframe = FALSE
-    )
-  )
-```
-
-```{r}
-#| warning: false
-#| echo: false
-#| label: 3d-globe-country-plot
-
-# Create the 3D globe plot with country hover information
-plot <- plot_ly(df_with_country,
-  type = "scattergeo",
-  lon = ~lon, lat = ~lat,
-  marker = list(
-    size = 10,
-    symbol = "circle",
-    opacity = 0.5,
-    color = ~anomaly,
-    colorscale = "RdBu",
-    colorbar = list(title = "Temperature Anomaly (C)")
-  ),
-  text = ~ paste(
-    "Country: ", name, "<br>Longitude: ", lon, "<br>Latitude: ", lat,
-    "<br>Temperature Anomaly: ", round(anomaly, 3), "<br>Geographical Zone: ", geographical_zone
-  )
-) %>%
-  layout(
-    title = paste("Temperature Anomaly on", date_to_plot),
-    geo = list(
-      projection = list(
-        type = "orthographic", # Use orthographic projection for 3D globe effect
-        rotation = list(lon = 0, lat = 0, roll = 0) # Set initial view
-      ),
-      showcountries = TRUE,
-      countrycolor = "rgb(50, 50, 50)",
-      countrywidth = 1.5 # Increase the country border weight
-    )
-  )
-
-# Show the plot
-plot
 ```
