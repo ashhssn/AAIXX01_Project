@@ -177,7 +177,7 @@
   footer_email_ids: "Email IDs (separated by commas)",
 
   // Color of the footer.
-  footer_color: "Hex Color Code",
+  footer_color: "CDEBC5",
 
   // DEFAULTS
   // ========
@@ -217,7 +217,7 @@
   body
 ) = {
   // Set the body font.
-  set text(font: "STIX Two Text", size: 20pt)
+  set text(font: "Calibri", size: 20pt)
   let sizes = size.split("x")
   let width = int(sizes.at(0)) * 1in
   let height = int(sizes.at(1)) * 1in
@@ -236,7 +236,7 @@
     width: width,
     height: height,
     margin: 
-      (top: 1in, left: 2in, right: 2in, bottom: 2in),
+      (top: 1in, left: 1in, right: 1in, bottom: 2in),
     footer: [
       #set align(center)
       #set text(32pt)
@@ -253,7 +253,8 @@
           #text(font: "Courier", size: footer_url_font_size, footer_email_ids)
         ]
       )
-    ]
+    ],
+    background: image("images/Earth.png")
   )
 
   // Configure equation numbering and spacing.
@@ -318,7 +319,7 @@
       row-gutter: 50pt,
       image(univ_logo, width: univ_logo_scale),
       text(title_font_size, title + "\n\n") + 
-      text(authors_font_size, emph(authors) + departments),
+      text(authors_font_size, emph(authors) + departments ),
     )
   )
 
@@ -352,7 +353,7 @@
 //   - https://github.com/typst/templates
 
 #show: doc => poster(
-   title: [This is an academic poster with typst and quarto!], 
+   title: [Visualizing Climate Change across the World], 
   // TODO: use Quarto's normalized metadata.
    authors: [A. Hussin, N. Ong, O. C. Wong, S. Chan, X. Y. Lim], 
    departments: [~], 
@@ -373,7 +374,7 @@
    footer_email_ids: [Team 04], 
 
   // Color of the footer.
-   footer_color: "ebcfb2", 
+   footer_color: "9DD9F3", 
 
   // DEFAULTS
   // ========
@@ -413,130 +414,79 @@
 )
 
 
-= Lorem Ipsum Dolor
-<lorem-ipsum-dolor>
-Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magnam aliquam quaerat voluptatem. Ut enim aeque doleamus animo, cum corpore dolemus, fieri tamen permagna accessio potest, si aliquod aeternum et infinitum impendere malum nobis opinemur. Quod idem licet transferre in voluptatem, ut postea variari voluptas distinguique possit, augeri amplificarique non possit. At etiam Athenis, ut e patre audiebam facete et urbane Stoicos irridente, statua est in quo a nobis philosophia defensa et collaudata est, cum id, quod maxime placeat, facere possimus, omnis voluptas assumenda est, om- nis dolor repellendus. Temporibus autem quibusdam et.
+= Introduction
+<introduction>
+Climate change, driven by human activities such as burning fossil fuels and deforestation, has led to a significant rise in global temperatures. This warming causes melting ice caps, rising sea levels, and more frequent extreme weather events. The year 2023 was the warmest year since global records began in 1850 at 1.18°C above the 20th century average of 13.9°C#super[1];. The 10 warmest years in the 174-year record have all occurred during the last decade \(2014–2023). The impacts are widespread, affecting ecosystems, human health, agriculture, and water resources.
 
+Despite the overwhelming scientific consensus on climate change, some skeptics persist#super[2];, questioning the evidence and downplaying the urgency. Creating awareness and convincing skeptics is crucial for fostering the collective action needed to mitigate its effects.
+
+In this project, we expanded upon a visualization of global temperature anomalies published by the National Oceanic and Atmospheric Administration#super[1] \(@fig-NOAA). While the original plot effectively summarizes the data, we believe there are several areas where it can be enhanced.
+
+= Original Visualization
+<original-visualization>
 #figure([
-#box(width: 50%,image("./images/Rosetta_stone.png"))
+#box(width: 100%,image("./images/NOAA_heatmap.png"))
 ], caption: figure.caption(
 position: bottom, 
 [
-Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do.
+Land and Sea Surface Temperature Deviations in 2023 from the 1991-2020 Average Temperature of 14.4°C, published by the NOAA.
 ]), 
 kind: "quarto-float-fig", 
 supplement: "Figure", 
-)
-
-
-Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magnam aliquam quaerat voluptatem. Ut enim aeque doleamus animo, cum corpore dolemus, fieri tamen permagna accessio potest, si aliquod aeternum et infinitum impendere malum nobis opinemur. Quod idem licet transferre in voluptatem, ut postea variari voluptas distinguique possit, augeri amplificarique non pos- sit. At.
-
-= Lorem ipsum
-<lorem-ipsum>
-Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magnam aliquam quaerat voluptatem. Ut enim aeque doleamus animo, cum corpore dolemus, fieri.
-
-+ Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do.
-+ Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do.
-+ Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do.
-
-Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magnam aliquam quaerat voluptatem. Ut enim aeque doleamus animo, cum corpore dolemus, fieri tamen permagna accessio potest, si aliquod aeternum et infinitum impendere malum nobis opinemur. Quod idem licet transferre in voluptatem, ut.
-
-#figure([
-#figure(
-align(center)[#table(
-  columns: 3,
-  align: (col, row) => (auto,auto,auto,).at(col),
-  inset: 6pt,
-  [Lorem ipsum dolor sit.], [Lorem ipsum.], [Lorem ipsum.],
-  [Lorem ipsum dolor.],
-  [Lorem ipsum.],
-  [$alpha$],
-  [Lorem ipsum.],
-  [Lorem ipsum.],
-  [$beta$],
-  [Lorem.],
-  [Lorem.],
-  [$gamma$],
-  [Lorem ipsum dolor.],
-  [Lorem.],
-  [$theta$],
-)]
-)
-
-], caption: figure.caption(
-position: top, 
-[
-Lorem ipsum dolor sit amet
-]), 
-kind: "quarto-float-tbl", 
-supplement: "Table", 
 numbering: "1", 
 )
-<tbl-1>
+<fig-NOAA>
 
 
-Lorem @tbl-1 ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magnam aliquam quaerat voluptatem. Ut enim aeque doleamus animo, cum corpore dolemus, fieri tamen permagna accessio potest, si aliquod aeternum et infinitum impendere malum nobis opinemur. Quod idem licet transferre in voluptatem, ut postea variari voluptas distinguique possit, augeri amplificarique non possit. At etiam Athenis, ut e patre audiebam facete et urbane Stoicos irridente, statua est in quo a nobis philosophia defensa et.
+= Critical Assessment of the Original Visualization
+<critical-assessment-of-the-original-visualization>
++ Comparison to Baseline: The graph shows anomalies relative to a baseline, but it does not specify what this baseline is.
 
-== Lorem ipsum dolor sit amet
-<lorem-ipsum-dolor-sit-amet>
-Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magnam aliquam quaerat voluptatem. Ut enim aeque doleamus animo, cum corpore dolemus, fieri tamen permagna accessio potest, si aliquod aeternum et infinitum impendere malum nobis opinemur. Quod idem licet transferre in voluptatem, ut postea variari voluptas distinguique possit, augeri amplificarique non possit. At etiam Athenis, ut e patre.
++ Interactivity: The visualization lacks interactive features that would allow users to explore the data further, such as hovering over data points to see exact values and region.
 
-#figure([
-#box(width: 100%,image("./images/Standard_lettering.png"))
-], caption: figure.caption(
-position: bottom, 
-[
-Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do.
-]), 
-kind: "quarto-float-fig", 
-supplement: "Figure", 
-)
++ Grid and Colour Legend: The grid and colour legend is rather coarse, which does not allow viewers to distinguish between closer temperature differences and close regions.
 
+= Suggested Improvements
+<suggested-improvements>
++ Baseline Information: Clearly indicate the baseline temperature to provide a reference point for interpreting the data.
 
-= Lorem ipsum dolor.
-<lorem-ipsum-dolor.>
-#block(
-fill:luma(230),
-inset:8pt,
-radius:4pt,
-[
-Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magnam aliquam quaerat voluptatem. Ut enim aeque doleamus animo, cum corpore dolemus, fieri tamen permagna accessio potest, si aliquod aeternum et infinitum impendere malum nobis opinemur. Quod idem licet transferre in voluptatem, ut postea variari voluptas distinguique possit, augeri amplifi- carique non possit. At etiam Athenis, ut e patre audiebam facete et urbane Stoicos irridente, statua est in quo a nobis philosophia defensa et.
++ Interactive Features: Implement interactive elements that allow users to explore the data in more detail, such as tooltips and filters.
 
-- Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do.
-- Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do.
-- Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do.
++ More Granular Grid and Colour Legend: Use a smaller grid size and more granular colour scale to better differentiate between small temperature anomalies in close regions.
 
-])
++ Dynamic Range Slider: A dynamic range slider will be added, allowing users to zoom into specific periods for detailed analysis or display a timelapse of temperature changes from 1930 to 2023.
 
-== Lorem ipsum etiam
-<lorem-ipsum-etiam>
-Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magnam aliquam quaerat voluptatem. Ut enim aeque doleamus animo, cum corpore dolemus, fieri tamen permagna accessio potest, si aliquod aeternum et infinitum impendere malum nobis opinemur.
+= Implementation
+<implementation>
+== Data
+<data>
+The gridded surface air temperature anomaly data was obtained from NASA#super[3];. The data is in NetCDF format and contains selected series on a regular 2°× 2° grid.
 
-== Lorem ipsum possimus
-<lorem-ipsum-possimus>
-Quod idem licet transferre in voluptatem, ut postea variari voluptas distinguique possit, augeri amplificarique non possit. At etiam Athenis, ut e patre audiebam facete et urbane Stoicos irridente, statua est in quo a nobis philosophia defensa et collaudata est, cum id, quod maxime placeat, facere possimus, omnis voluptas assumenda est, om- nis dolor repellendus. Temporibus autem quibusdam et.
+== Software
+<software>
+We used the Quarto publication framework and the R programming language, along with the following third-party packages:
 
-Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magnam aliquam quaerat voluptatem. Ut enim aeque doleamus animo, cum corpore dolemus, fieri tamen permagna accessio potest, si aliquod aeternum et infinitum impendere malum nobis opinemur.
+- ncdf4: Reads scientific data \(NetCDF format)
+- reshape2: Reshapes data \(wide to long, etc.)
+- plotly: Creates interactive visualizations \(charts, maps)
+- dplyr: Manipulates data \(filter, select, etc.)
+- sf: Works with spatial data \(Shapefiles)
+- rnaturalearth: Provides pre-made geographic datasets \(maps)
 
-#figure([
-#box(width: 396.0pt, image("images/fig-airquality-1.svg"))
-], caption: figure.caption(
-position: bottom, 
-[
-Temperature and ozone level
-]), 
-kind: "quarto-float-fig", 
-supplement: "Figure", 
-)
+== Workflow
+<workflow>
+= Improved Visualization
+<improved-visualization>
+= Further Improvements
+<further-improvements>
+The visualization can be enhanced by showing additional data, such as sea ice cover or atmospheric CO#sub[2] concentrations. This would illustrate how these factors relate to climate change and provide a more comprehensive view of the issue.
 
+= Conclusion
+<conclusion>
+In summary, several key enhancements were made to the global temperature anomalies graph to improve its clarity, accessibility, and interactivity. The baseline temperature was clearly indicated to provide a reference point for interpreting the data. Interactive features such as tooltips and filters, along with a dynamic range slider, were introduced to allow users to explore the data in more detail and focus on specific periods. These improvements make the graph a more effective tool for communicating the reality and urgency of climate change.
 
-Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magnam aliquam quaerat voluptatem. Ut enim aeque doleamus animo, cum corpore dolemus, fieri tamen permagna accessio potest, si aliquod aeternum et infinitum impendere malum nobis opinemur. Quod idem licet transferre in voluptatem, ut postea variari voluptas distinguique possit, augeri amplificarique non possit. At etiam Athenis, ut e patre audiebam facete et urbane Stoicos irridente, statua est in quo a nobis philosophia defensa et collaudata est, cum id, quod maxime placeat, facere possimus, omnis voluptas assumenda est, om- nis dolor repellendus. Temporibus autem quibusdam et.
-
-- Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do.
-  - Lorem ipsum dolor sit amet.
-  - Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-- Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore.
-  - Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed.
-  - Lorem ipsum dolor sit amet, consectetur adipiscing.
-
-$ sum_((k = 1))^n k = (n (n + 1)) / 2 = (n^2 + n) / 2 $
+= References
+<references>
++ #link("https://www.ncei.noaa.gov/access/monitoring/monthly-report/global/202313")[NOAA]
++ #link("https://www.weforum.org/agenda/2020/01/climate-science-global-warming-most-sceptics-country/")[World Economic Forum]
++ #link("https://data.giss.nasa.gov/gistemp/")[Land-Ocean Temperature Index, ERSSTv5, 1200km smoothing, NASA]
