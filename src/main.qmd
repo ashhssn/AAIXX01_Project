@@ -39,46 +39,5 @@ df_clean <- read.csv("data/df_filtered.csv")
 
 # Data Visualization
 
-```{r}
-#| warning: false
-#| echo: false
-#| label: plot-1
-
-max <- max(df_clean$mean_anomaly)
-min <- -max
-
-# Create the plot with animation
-plot <- plot_ly(df_clean,
-  type = "scattergeo", mode = "markers",
-  lon = ~lon, lat = ~lat,
-  frame = ~year,  # Add this line for animation
-  marker = list(
-    size = 10,
-    symbol = "square",
-    opacity = 0.4,
-    color = ~mean_anomaly,
-    colorscale = "RdBu",
-    cmax = max,
-    cmin = min,
-    colorbar = list(title = "Temperature Anomaly (C)")
-  ),
-  text = ~paste(
-    "Longitude: ", lon, "<br>Latitude: ", lat,
-    "<br>Temperature Anomaly: ", mean_anomaly
-  )
-) %>%
-  layout(
-    title = "Temperature Anomaly Over Time",
-    geo = list(
-      projection = list(type = "natural earth"),
-      showcountries = TRUE,
-      countrycolor = "black",
-      showframe = FALSE
-    )
-  )
-
-# Show the plot
-plot
-```
 
 
