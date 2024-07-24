@@ -51,9 +51,11 @@ categorize_location <- function(lat, lon) {
 
 ```
 
+
 # Data Pre-processing
 
 ## Load data and assign to dataframe
+
 ```{r}
 #| warning: false
 #| echo: true
@@ -95,7 +97,9 @@ head(df)
 
 ```
 
+
 ## Check for Missing Values & filling missing values with linear interpolation
+
 ```{r}
 #| warning: false
 #| echo: true
@@ -130,7 +134,9 @@ print(head(df))
 df_interpolated <- df
 ```
 
+
 ## Feature Engineering - Mean Temp anomaly for each year
+
 ```{r}
 #| warning: false
 #| echo: true
@@ -149,7 +155,9 @@ df_clean <- df |> group_by(year, lon, lat) |>
 df_clean$year <- as.character(df_clean$year)
 ```
 
+
 ## Line Graph for comparison of temperature anomaly trend before and after interpolation
+
 ```{r}
 #| warning: false
 #| echo: false
@@ -180,7 +188,9 @@ ggplot(df_combined_summary, aes(x = year, y = mean_anomaly, color = type)) +
   theme_minimal()
 ```
 
+
 ## Exporting data frame to csv
+
 ```{r}
 #| warning: false
 #| echo: true
@@ -189,7 +199,9 @@ ggplot(df_combined_summary, aes(x = year, y = mean_anomaly, color = type)) +
 write.csv(df_clean, "data/df_filtered.csv", row.names = FALSE)
 ```
 
+
 # Data Visualization
+
 
 ```{r}
 #| warning: false
@@ -234,5 +246,4 @@ plot <- plot_ly(df_clean,
 # Show the plot
 plot
 ```
-
 
