@@ -98,7 +98,7 @@ head(df)
 ```{r}
 #| warning: false
 #| echo: false
-#| label: Data Cleaning
+#| label: data-cleaning
 
 # Filter the data for years 1960 to 2024
 df <- df[df$time >= as.Date("1960-01-01") & df$time <= as.Date("2024-12-31"), ]
@@ -133,7 +133,7 @@ df_interpolated <- df
 ```{r}
 #| warning: false
 #| echo: false
-#| label: Feature Engineering
+#| label: feature-engineering
 
 # Finding Mean Temp anomaly for each year
 # Step 1: Extract the year from the date in the df data frame
@@ -152,7 +152,7 @@ df_clean$year <- as.character(df_clean$year)
 ```{r}
 #| warning: false
 #| echo: false
-#| label: Line Graph
+#| label: line-graph
 
 # Add a column to identify the type of data
 df_original$type <- "Original"
@@ -183,7 +183,7 @@ ggplot(df_combined_summary, aes(x = year, y = mean_anomaly, color = type)) +
 ```{r}
 #| warning: false
 #| echo: false
-#| label: Exporting Data Frame
+#| label: export-df
 
 write.csv(df_clean, "data/df_filtered.csv", row.names = FALSE)
 ```
