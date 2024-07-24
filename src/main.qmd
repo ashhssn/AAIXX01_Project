@@ -325,9 +325,7 @@ plot <- plot_ly(df_with_country,
 plot
 ```
 
-
-
-Testing 
+Data preparation for 3d Globe with filters
 ```{r}
 df <- read.csv("data/clean_data.csv")
 
@@ -345,6 +343,15 @@ df <- df %>%
 # Remove NA values that result from the moving average calculation
 df <- df %>% filter(!is.na(mean_anomaly_smoothed))
 
+# Calculate cumulative sum of smoothed anomalies for each location over time
+df <- df %>%
+  arrange(lon, lat, year) %>%
+  group_by(lon, lat) %>%
+  mutate(cumulative_anomaly = cumsum(mean_anomaly_smoothed))
+```
+
+Testing time series for 3d Globe
+```{r}
 # Create the plot with animation
 plot <- plot_ly(df,
   type = "scattergeo", mode = "markers",
@@ -391,9 +398,8 @@ head(df_aggregated)
 
 ```
 
+Looking at Trend Over Time with trend curve
 ```{r}
-
-
 # Plot the average temperature anomaly over time with a trend curve
 ggplot(df_aggregated, aes(x = year, y = mean_anomaly)) +
   geom_line(color = "blue") +
@@ -417,29 +423,8 @@ ggplot(df_aggregated, aes(x = year, y = mean_anomaly)) +
 
 Testing slider with filter
 ```{r}
+
 library(shiny)
-# Load the data
-df <- read.csv("data/clean_data.csv")
-
-# Function to calculate the moving average
-moving_average <- function(x, n = 5){
-  stats::filter(x, rep(1/n, n), sides = 2)
-}
-
-# Apply moving average to the mean_anomaly column
-df <- df %>%
-  arrange(year, lon, lat) %>%
-  group_by(lon, lat) %>%
-  mutate(mean_anomaly_smoothed = moving_average(mean_anomaly, n = 5))
-
-# Remove NA values that result from the moving average calculation
-df <- df %>% filter(!is.na(mean_anomaly_smoothed))
-
-# Calculate cumulative sum of smoothed anomalies for each location over time
-df <- df %>%
-  arrange(lon, lat, year) %>%
-  group_by(lon, lat) %>%
-  mutate(cumulative_anomaly = cumsum(mean_anomaly_smoothed))
 
 # Calculate max and min for color scaling
 max_anomaly <- max(df$mean_anomaly, na.rm = TRUE)
@@ -489,6 +474,85 @@ server <- function(input, output) {
     ) %>%
     layout(
       title = paste(input$metric, "Over Time"),
+      geo = list(
+        projection = list(type = "natural earth"),
+        showcountries = TRUE,
+        countrycolor = "black",
+        showframe = FALSE
+      )
+    )
+    
+    plot
+  })
+}
+
+# Run the application 
+shinyApp(ui = ui, server = server)
+
+```
+
+Added Tropics, Northern Hemisphere, and Southern Hemisphere filters
+```{r}
+# Apply the categorize_location function
+df$geographical_zone <- mapply(categorize_location, df$lat, df$lon)
+
+# Calculate max and min for color scaling
+max_anomaly <- max(df$mean_anomaly, na.rm = TRUE)
+min_anomaly <- -max_anomaly
+
+# Shiny UI
+ui <- fluidPage(
+  titlePanel("Temperature Anomaly Visualization"),
+  sidebarLayout(
+    sidebarPanel(
+      selectInput("filter", "Select Filter:", 
+                  choices = c("Mean Anomaly" = "mean_anomaly",
+                              "Tropics" = "Tropics",
+                              "Northern Hemisphere" = "Northern",
+                              "Southern Hemisphere" = "Southern")),
+      sliderInput("year", "Year:", 
+                  min = min(df$year), max = max(df$year), value = min(df$year), 
+                  step = 1, animate = animationOptions(interval = 1000, loop = FALSE))
+    ),
+    mainPanel(
+      plotlyOutput("anomalyPlot")
+    )
+  )
+)
+
+# Shiny Server
+server <- function(input, output) {
+  output$anomalyPlot <- renderPlotly({
+    df_filtered <- df %>% filter(year == input$year)
+    
+    if (input$filter == "Tropics") {
+      df_filtered <- df_filtered %>% filter(geographical_zone == "Tropics")
+    } else if (input$filter == "Northern") {
+      df_filtered <- df_filtered %>% filter(lat > 0)
+    } else if (input$filter == "Southern") {
+      df_filtered <- df_filtered %>% filter(lat < 0)
+    }
+    
+    plot <- plot_ly(df_filtered,
+      type = "scattergeo", mode = "markers",
+      lon = ~lon, lat = ~lat,
+      marker = list(
+        size = 10,
+        symbol = "square",
+        opacity = 0.4,
+        color = ~mean_anomaly,
+        colorscale = "RdBu",
+        cmax = max_anomaly,
+        cmin = min_anomaly,
+        colorbar = list(title = "Temperature Anomaly (C)")
+      ),
+      text = ~paste(
+        "Longitude: ", lon, "<br>Latitude: ", lat,
+        "<br>Temperature Anomaly: ", mean_anomaly
+      )
+    ) %>%
+    layout(
+      title = paste("Temperature Anomaly in", input$year),
       geo = list(
         projection = list(type = "natural earth"),
         showcountries = TRUE,
