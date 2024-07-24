@@ -52,9 +52,11 @@ categorize_location <- function(lat, lon) {
 ```
 
 # Data Pre-processing
+
+## Load data and assign to dataframe
 ```{r}
 #| warning: false
-#| echo: false
+#| echo: true
 #| label: load-data
 
 # Open the NetCDF file
@@ -93,11 +95,10 @@ head(df)
 
 ```
 
-# Data Cleaning
 ## Check for Missing Values & filling missing values with linear interpolation
 ```{r}
 #| warning: false
-#| echo: false
+#| echo: true
 #| label: data-cleaning
 
 # Filter the data for years 1960 to 2024
@@ -132,7 +133,7 @@ df_interpolated <- df
 ## Feature Engineering - Mean Temp anomaly for each year
 ```{r}
 #| warning: false
-#| echo: false
+#| echo: true
 #| label: feature-engineering
 
 # Finding Mean Temp anomaly for each year
@@ -148,7 +149,7 @@ df_clean <- df |> group_by(year, lon, lat) |>
 df_clean$year <- as.character(df_clean$year)
 ```
 
-# Line Graph for comparison of temperature anomaly trend before and after interpolation
+## Line Graph for comparison of temperature anomaly trend before and after interpolation
 ```{r}
 #| warning: false
 #| echo: false
@@ -179,11 +180,15 @@ ggplot(df_combined_summary, aes(x = year, y = mean_anomaly, color = type)) +
   theme_minimal()
 ```
 
-#Exporting data frame to csv
+## Exporting data frame to csv
 ```{r}
 #| warning: false
-#| echo: false
+#| echo: true
 #| label: export-df
 
 write.csv(df_clean, "data/df_filtered.csv", row.names = FALSE)
 ```
+
+# Data Visualization
+
+
