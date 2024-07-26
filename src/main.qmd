@@ -236,7 +236,6 @@ plot <- plot_ly(df_clean,
 plot
 ```
 
-<<<<<<< HEAD
 Data preparation for 3d Globe with filters
 ```{r}
 df <- read.csv("data/clean_data.csv")
@@ -481,6 +480,4 @@ server <- function(input, output) {
 shinyApp(ui = ui, server = server)
 
 ```
-=======
 
->>>>>>> main
