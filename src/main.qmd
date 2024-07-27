@@ -343,7 +343,7 @@ fig <- plot_geo(df_clean, lat = ~lat, lon = ~lon, frame = ~year)
 
 fig <- fig %>%
   add_markers(
-    text = ~ paste(lon, lat, "<br />"),
+    text = ~ paste(lon, lat, "<br />", "Mean Anomaly: ", mean_anomaly, "°C"),
     symbol = I("square"),
     size = I(8),
     alpha = 0.4,
@@ -364,6 +364,8 @@ fig <- fig %>%
     outlinecolor = "black", 
     outlinewidth = 2
   )
+
+
 
 fig <- fig %>% layout(
   title = "Temperature Anomaly (based on 1951 - 1980 mean)",
