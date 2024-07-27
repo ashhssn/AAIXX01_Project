@@ -3,11 +3,10 @@ title: "team_04.qmd"
 format: 
   html:
     toc: true
-    toc-depth: 2
+    toc-depth: 3
     embed-resources: true
     warning: false
 author: "Ashsyahid, Owen, Sherwyn, Xuan Yu, Nigel"
-number_sections: false
 knitr:
   opts_chunk:
     message: false
@@ -26,32 +25,339 @@ library(sf)
 library(rnaturalearth)
 library(zoo)
 library(naniar)
+library(data.table)
+library(scales)
 ```
-
 
 ```{r}
-#| label: load-clean-data
 #| warning: false
 #| echo: false
+#| label: categorize-location-function
 
-df_clean <- read.csv("data/df_filtered.csv")
-
-df_clean$mean_anomaly <- round(df_clean$mean_anomaly, 2)
-df_clean$mean_anomaly <- df_clean$mean_anomaly * 10
-
-max <- max(df_clean$mean_anomaly)
-min <- -max
+categorize_location <- function(lat, lon) {
+  if (lat > 23.5 & lat < 66.5) {
+    return("Temperate Northern Hemisphere")
+  } else if (lat > -23.5 & lat < 23.5) {
+    return("Tropics")
+  } else if (lat > -66.5 & lat < -23.5) {
+    return("Temperate Southern Hemisphere")
+  } else if (lat >= 66.5) {
+    return("Polar Northern Hemisphere")
+  } else if (lat <= -66.5) {
+    return("Polar Southern Hemisphere")
+  } else {
+    return("Unknown")
+  }
+}
 ```
 
-# Data Visualization
 
+# 1. Data Preprocessing
+
+## 1.1 Exploratory Data Analysis
+
+Before cleaning our dataset, we need to first perform EDA to understand the structure of our data. We will load the data, slice it to the past 5 decades, and check for missing values. We will also visualize the missing values to understand the pattern of missingness.
+
+### 1.1.1 Load data and assign to dataframe
+
+We can use the `head()` method to inspect the first few rows of the dataframe.
+```{r}
+#| warning: false
+#| echo: true
+#| label: load-data
+
+# Open the NetCDF file
+ncfile <- nc_open("data/gistemp1200_GHCNv4_ERSSTv5.nc")
+
+# Extract variables
+lat <- ncvar_get(ncfile, "lat")
+lon <- ncvar_get(ncfile, "lon")
+time <- ncvar_get(ncfile, "time")
+anomaly <- ncvar_get(ncfile, "tempanomaly")
+
+# Extract attributes
+scale_factor <- ncatt_get(ncfile, "tempanomaly", "scale_factor")$value
+fill_value <- ncatt_get(ncfile, "tempanomaly", "_FillValue")$value
+
+# Convert time variable to date
+time_units <- ncatt_get(ncfile, "time", "units")$value
+origin <- as.Date(sub("days since ", "", time_units))
+date <- origin + time
+
+# Apply scale factor and handle missing values
+anomaly <- ifelse(anomaly == fill_value, NA, anomaly) * (scale_factor * 10)
+
+# Reshape the data into a long format dataframe
+df <- expand.grid(lon = lon, lat = lat, time = date)
+df$anomaly <- as.vector(anomaly)
+
+# UNCOMMENT THE CHUNK BELOW WHEN NECESSARY
+# df$geographical_zone <- mapply(categorize_location, df$lat, df$lon)
+
+# Close the NetCDF file
+nc_close(ncfile)
+
+# Display the first few rows of the dataframe
+head(df)
+```
+
+### 1.1.2 Slice data
+
+For this project, we are only interested in data for the past 5 decades.
+```{r}
+#| warning: false
+#| echo: true
+#| label: slice-data
+
+# Filter the data for years 1960 to 2024
+df <- df[df$time >= as.Date("1960-01-01") & df$time <= as.Date("2024-12-31"), ]
+```
+
+### 1.1.3 Missing values
+
+Here, we can see that the original `dataframe` consists of `115935` missing values in the `anomaly` column. To visualize our missing data, we will plot a matrix chart of missing values by time. For efficiency sake, we will first sample the data before [visualizing the missing data](#pattern-of-missing-values)
+
+```{r}
+#| warning: false
+#| echo: true
+#| label: missing-values
+
+# Count the number of NA values for each column
+na_count <- colSums(is.na(df))
+na_count
+```
+
+### 1.1.4 Sample Data for faster EDA
+
+Data is sampled to **speed up** initial exploration of dataset. Random sampling is used to sample 1% of the dataset.
+
+```{r}
+#| warning: false
+#| echo: true
+#| label: data-sampling
+
+set.seed(42)
+sample_df <- df %>% sample_frac(0.01)
+
+summary(sample_df)
+```
+
+### 1.1.5 Pattern of missing values
+
+We use a matrix chart to visualize the pattern of missing values by time. This will help us understand if there are any specific time periods with more missing values. Additionally, it can provide us information on the ***type of missingness*** in the dataset.
+
+```{r}
+#| warning: false
+#| echo: true
+#| label: missing-values-plot
+
+# Extract year and month from the time column
+format_sample_df <- sample_df %>%
+  mutate(
+    year = format(time, "%Y"),
+    month = format(time, "%m"),
+    year_month = paste0(year, "-", month)
+  )
+
+# Count missing values by year-month
+missing_data <- format_sample_df %>%
+  group_by(year_month) %>%
+  summarize(missing_count = sum(is.na(anomaly)), .groups = "drop")
+
+# Convert year_month to Date format for plotting
+missing_data <- missing_data %>%
+  mutate(year_month_date = as.Date(paste0(year_month, "-01"), format = "%Y-%m-%d"))
+
+ggplot(missing_data, aes(y = year_month_date, x = 1, fill = missing_count)) +
+  geom_tile() +
+  scale_fill_gradient(low = "white", high = "black") +
+  labs(
+    title = "Matrix Chart of Missing Values by Time",
+    x = "",
+    y = "Year-Month",
+    fill = "Missing Values"
+  ) +
+  theme_minimal() +
+  theme(
+    axis.text.x = element_blank(),
+    axis.ticks.x = element_blank(),
+    axis.text.y = element_text(hjust = 1)
+  )
+```
+
+### 1.1.6 Distribution of temperature anomaly
+
+We use a `histogram` to visualize the distribution of temperature anomaly in the sampled data. This will help us understand the spread of temperature anomalies in the dataset.
+```{r}
+#| warning: false
+#| echo: true
+#| label: tempanomaly-distribution
+
+ggplot(sample_df, aes(x = anomaly)) +
+  geom_histogram(binwidth = 0.1, fill = "blue", color = "black", alpha = 0.7) +
+  labs(title = "Distribution of Temperature Anomaly", x = "Temperature Anomaly", y = "Frequency")
+```
+### 1.1.7 Time series plot of temperature anomaly (by month)
+
+To understand the trend of temperature anomaly over time, we plot a time series graph of the global average temperature anomaly by month. This will help us visualize the changes in temperature anomaly over the past 5 decades. 
+```{r}
+#| warning: false
+#| echo: true
+#| label: time-series-plot
+
+sample_df <- sample_df %>% mutate(year = as.numeric(format(time, "%Y")))
+yearly_data <- sample_df %>%
+  group_by(year) %>%
+  summarize(mean_temp_anomaly = mean(anomaly, na.rm = TRUE))
+
+ggplot(yearly_data, aes(x = year, y = mean_temp_anomaly)) +
+  geom_line(color = "blue") +
+  labs(title = "Global Average Temperature Anomaly Over Years", x = "Time", y = "Global Average Temperature Anomaly")
+```
+
+## 1.2 Feature Engineering
+
+### 1.2.1 Interpolation of missing data
+
+A linear interpolation is performed to fill in the missing values in the `anomaly` column. It is preferred over backward and forward filling, or other techniques, in many applications due to its balanced approach to estimating missing values. Unlike forward filling, which repeats the previous value, or backward filling, which repeats the next value, linear interpolation considers the values on both sides of a missing point, creating a more realistic and smooth transition. This method is particularly advantageous in time series data, such as temperature anomalies, where maintaining the natural progression and trend is crucial for accurate analysis. By connecting missing data points with a straight line, linear interpolation preserves the overall pattern and minimises the introduction of bias, making it a more reliable choice for handling gaps in data.
+```{r}
+#| warning: false
+#| echo: true
+#| label: interpolate-missing-values
+
+# set the dataframe as a data.table to speed up feature engineering processes
+setDT(df)
+
+# Inspect rows with NA values
+na_rows <- df[!complete.cases(df), ]
+print(head(na_rows))
+
+# Create a copy of the original data before interpolation for comparison in the line graph
+df_original <- df
+
+# Impute missing values using linear interpolation
+df$anomaly <- na.approx(df$anomaly, na.rm = FALSE)
+
+any_na_interpolated <- any(is.na(df))
+na_count_interpolated <- colSums(is.na(df))
+cat("Number of NA values in each column after interpolation:")
+print(na_count_interpolated)
+cat("First few rows after interpolation:")
+print(head(df))
+
+# Create a copy of the interpolated data for comparison in the line graph
+df_interpolated <- df
+```
+
+### 1.2.2 Create column for Mean Temp anomaly for each year
+
+We create a new column, `mean_anomaly`, to store the mean temperature anomaly for each year. This will help us to visualize the trend of temperature anomaly over the years. In addition, this information can be used to analyse the overall temperature patterns, identify anomalies, and assess the impact of climate change on global temperatures.
+```{r}
+#| warning: false
+#| echo: true
+#| label: get-mean-anomaly
+
+# Step 1: Extract the year from the date in the df data.table
+df[, year := year(time)]
+
+# Step 2 and Step 3: Group by year, lon, and lat, then calculate the mean temperature anomaly for each group
+df_clean <- df[, .(mean_anomaly = mean(anomaly, na.rm = TRUE)), by = .(year, lon, lat)]
+
+# Ensure the year column is of type character for plotly
+df_clean[, year := as.character(year)]
+```
+
+### 1.2.3 Line Graph for comparison of temperature anomaly trend before and after interpolation
+
+Here, we sample the interpolated `dataframe` again to **speed up** the process of plotting the line graph of before interpolation and after interpolation. This will allow us to compare the temperature trends and identify any discrepancies between the two data sets. This visualization enables us to evaluate the effectiveness of the interpolation method and determine its impact on the overall temperature anomaly trend.
+
+```{r}
+#| warning: false
+#| echo: true
+#| label: line-graph-for-interpolation
+
+# # sample 5% of data for faster plotting
+df_original_sample <- df_original %>% sample_frac(0.05)
+df_interpolated_sample <- df_interpolated %>% sample_frac(0.05)
+
+# Add a column to identify the type of data
+df_original_sample$type <- "Original"
+df_interpolated_sample$type <- "Interpolated"
+
+# Combine the original and interpolated data
+df_combined <- bind_rows(df_original_sample, df_interpolated_sample)
+
+# Ensure the combined dataframe has the same structure
+df_combined <- df_combined |> select(lon, lat, time, anomaly, type)
+
+# Summarize mean anomaly per year for both original and interpolated data
+df_combined_summary <- df_combined |>
+  mutate(year = as.numeric(format(time, "%Y"))) |>
+  group_by(year, type) |>
+  summarize(mean_anomaly = mean(anomaly, na.rm = TRUE), .groups = "drop")
+
+# Create the line graph using ggplot2
+ggplot(df_combined_summary, aes(x = year, y = mean_anomaly, color = type)) +
+  geom_line() +
+  labs(
+    title = "Temperature Anomaly Trend Before and After Interpolation",
+    x = "Year",
+    y = "Mean Temperature Anomaly"
+  ) +
+  theme_minimal()
+```
+
+### 1.2.4 Categorize geographical zones
+```{r}
+#| warning: false
+#| echo: false
+#| label: categorize-geographical-zones
+
+# Load country boundaries 
+world <- ne_countries(scale = "medium", returnclass = "sf") 
+ 
+# Convert the data to an sf object 
+df_sf <- st_as_sf(df_clean, coords = c("lon", "lat"), crs = 4326) 
+ 
+# Perform spatial join to add country names to the data 
+df_with_country <- st_join(df_sf, world["name"]) 
+ 
+# Extract the coordinates back into separate columns 
+df_with_country <- df_with_country %>% 
+  mutate(lon = st_coordinates(.)[,1], 
+         lat = st_coordinates(.)[,2]) 
+```
+
+# 2. Data Visualization
+
+```{r}
+#| warning: false
+#| echo: false
+#| label: format-mean-anomaly
+
+df_with_country$mean_anomaly <- round(df_clean$mean_anomaly, 2)
+
+max <- max(df_with_country$mean_anomaly)
+min <- -max
+
+```
 
 ```{r}
 #| warning: false
 #| echo: false
 #| label: interactive-choropleth-map
 
-col3 <- colorRamp(c("#0C7BDC", "white", "#FFC20A"))
+colors <- c("#5D3A9B", "#0C7BDC", "white", "#FFC20A", "#E66100")
+positions <- c(0,0.0625, 0.125, 0.25, 1)
+
+col_func <- colorRampPalette(colors)
+
+# Adjust the colors using scales::rescale to match the positions
+adjusted_colors <- col_func(length(positions))
+adjusted_positions <- rescale(positions, to = c(0, 1))
+
+named_colors <- setNames(adjusted_colors, adjusted_positions)
+
 
 g <- list(
   projection = list(type = "natural earth"),
@@ -64,16 +370,16 @@ g <- list(
   subunitwidth = 1
 )
 
-fig <- plot_geo(df_clean, lat = ~lat, lon = ~lon, frame = ~year)
+fig <- plot_geo(df_with_country, lat = ~lat, lon = ~lon, frame = ~year)
 
 fig <- fig %>%
   add_markers(
-    text = ~ paste(lon, lat, "<br />"),
+    text = ~ paste(lon, lat, "<br />", "Mean Anomaly: ", mean_anomaly, "°C", "<br />","Country: ", name),
     symbol = I("square"),
     size = I(8),
     alpha = 0.4,
     color = ~mean_anomaly,
-    colors = col3,
+    colors = named_colors,
   ) %>%
   colorbar(
     title = "Mean Anomaly (°C)", 
@@ -94,9 +400,9 @@ fig <- fig %>%
 
 fig <- fig %>% layout(
   title = "Temperature Anomaly (based on 1951 - 1980 mean)",
-  geo = g,
-  plot_bgcolor = "rgb(105,105,105)" # Set plot background color
+  geo = g
 )
 
 fig
+
 ```
