@@ -26,6 +26,7 @@ library(sf)
 library(rnaturalearth)
 library(zoo)
 library(naniar)
+library(profvis)
 ```
 
 
@@ -43,14 +44,11 @@ max <- max(df_clean$mean_anomaly)
 min <- -max
 ```
 
-# Data Visualization
-
-
 ```{r}
-#| warning: false
-#| echo: false
-#| label: plot-1
+library(parallel)
+library(plotly)
 
+# Create color ramp and layout (these are quick operations, no need to parallelize)
 col3 <- colorRamp(c("#0C7BDC", "white", "#FFC20A"))
 
 g <- list(
@@ -64,25 +62,67 @@ g <- list(
   subunitwidth = 1
 )
 
-fig <- plot_geo(df_clean, lat = ~lat, lon = ~lon, frame = ~year)
+# Number of cores
+num_cores <- detectCores() - 1  # Use one less than the total number of cores
 
-fig <- fig %>% add_markers(
-    text = ~paste(lon, lat, "<br />"),
-    symbol = I("square"), 
+# Create cluster
+cl <- makeCluster(num_cores)
+
+clusterExport(cl, c("df_clean", "col3", "g"))
+
+# Export necessary libraries and functions to each node
+clusterEvalQ(cl, {
+  library(plotly)
+})
+
+# Function to create plot
+create_plot <- function(df, colormap, layout) {
+  library(plotly)
+  fig <- fig <- plot_geo(df_clean, 
+           lat = ~lat, 
+           lon = ~lon, 
+           frame = ~year) %>%
+  add_markers(
+    text = ~ paste(lon, lat, "<br />"),
+    symbol = I("square"),
     size = I(8),
     alpha = 0.4,
-    color = ~mean_anomaly, 
+    color = ~mean_anomaly,
     colors = col3,
-  ) %>% colorbar(title = "Mean Anomaly (°C)", limits = c(-8, 8), tickvals = seq(-8, 8, 1), ticktext = seq(-8, 8, 1),len = 0.9,
-                 orientation = "h",x=0.41,y=-0.05,thickness=20,thicknessmode="pixels",outlinecolor="black",outlinewidth=2)
-
-
-
-fig <- fig %>% layout(
+  ) %>%
+  colorbar(
+    title = "Mean Anomaly (°C)", 
+    limits = c(-8, 8), 
+    tickvals = seq(-8, 8, 1), 
+    ticktext = seq(-8, 8, 1), 
+    len = 0.9,
+    orientation = "h", 
+    x = 0.41, y = -0.05, 
+    thickness = 20, 
+    thicknessmode = "pixels", 
+    outlinecolor = "black", 
+    outlinewidth = 2
+  ) %>%
+  layout(
     title = 'Temperature Anomaly (based on 1951 - 1980 mean)',
     geo = g,
     plot_bgcolor = 'rgb(105,105,105)'  # Set plot background color
   )
+  
+  return(fig)
+}
+
+# Parallelize plot creation (if necessary, split df_clean into chunks)
+fig_list <- parLapply(cl, list(df_clean), create_plot, col3, g)
+
+# Stop cluster
+stopCluster(cl)
+
+# Render the plot (assuming only one plot, if multiple combine appropriately)
+fig <- fig_list[[1]]
 
 fig
+
 ```
+
+# Data Visualization
