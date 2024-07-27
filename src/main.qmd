@@ -353,8 +353,6 @@ max <- max(df_clean$mean_anomaly)
 min <- -max
 ```
 
-### 2.1.1 Interactive Choropleth Map
-
 ```{r}
 #| warning: false
 #| echo: false
@@ -377,7 +375,7 @@ fig <- plot_geo(df_clean, lat = ~lat, lon = ~lon, frame = ~year)
 
 fig <- fig %>%
   add_markers(
-    text = ~ paste(lon, lat, "<br />", "Mean Anomaly: ", mean_anomaly, "°C"),
+    text = ~ paste(lon, lat, "<br />"),
     symbol = I("square"),
     size = I(8),
     alpha = 0.4,
@@ -399,8 +397,6 @@ fig <- fig %>%
     outlinewidth = 2
   )
 
-
-
 fig <- fig %>% layout(
   title = "Temperature Anomaly (based on 1951 - 1980 mean)",
   geo = g,
@@ -408,76 +404,4 @@ fig <- fig %>% layout(
 )
 
 fig
-```
-
-### 2.1.2 Improved Interactive Chloropleth Map with Geographical Information
-
-```{r}
-#| warning: false
-#| echo: false
-#| label: interactive-choropleth-map
-
-
-# Define color ramp for the plot
-col3 <- colorRamp(c("#0C7BDC", "white", "#FFC20A"))
-
-# Define the map projection and layout settings
-g <- list(
-  projection = list(type = "natural earth"),
-  showland = TRUE,
-  landcolor = toRGB("gray95"),
-  subunitcolor = toRGB("gray85"),
-  countrycolor = toRGB("gray85"),
-  bgcolor = toRGB("gray70"),
-  countrywidth = 1,
-  subunitwidth = 1
-)
-
-# Round mean anomaly to 2 decimal places
-df_clean$mean_anomaly <- round(df_clean$mean_anomaly, 2)
-
-# Create the plotly figure
-fig <- plot_geo(df_clean, lat = ~lat, lon = ~lon, frame = ~year)
-
-# Add markers to the plot with hover information
-fig <- fig %>%
-  add_markers(
-    text = ~ paste("Longitude: ", lon, "<br>",
-                   "Latitude: ", lat, "<br>",
-                   "Country: ", country, "<br>",
-                   "Zone: ", geographical_zone, "<br>",
-                   "Mean Anomaly: ", format(mean_anomaly, digits = 2), "°C"),
-    hoverinfo = "text",
-    symbol = I("square"),
-    size = I(8),
-    alpha = 0.4,
-    color = ~mean_anomaly,
-    colors = col3
-  ) %>%
-  colorbar(
-    title = "Mean Anomaly (°C)", 
-    limits = c(-8, 8), 
-    tickvals = seq(-8, 8, 1), 
-    ticktext = seq(-8, 8, 1), 
-    len = 0.9,
-    orientation = "h", 
-    x = 0.41, 
-    y = -0.05, 
-    thickness = 20, 
-    thicknessmode = "pixels", 
-    outlinecolor = "black", 
-    outlinewidth = 2
-  )
-
-# Layout settings for the plot
-fig <- fig %>% layout(
-  title = "Temperature Anomaly (based on 1951 - 1980 mean)",
-  geo = g,
-  plot_bgcolor = "rgb(105,105,105)" # Set plot background color
-)
-
-# Show the plot
-fig
-
-
 ```
