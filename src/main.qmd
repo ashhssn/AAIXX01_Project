@@ -23,6 +23,7 @@ library(plotly)
 library(dplyr)
 library(sf)
 library(rnaturalearth)
+library(rnaturalearthhires)
 library(zoo)
 library(naniar)
 library(data.table)
@@ -307,6 +308,37 @@ ggplot(df_combined_summary, aes(x = year, y = mean_anomaly, color = type)) +
   theme_minimal()
 ```
 
+### 1.2.4 Spatial Join with Countries Data
+
+```{r}
+
+# Convert your dataframe to an sf object
+df_sf <- st_as_sf(df, coords = c("lon", "lat"), crs = 4326, remove = FALSE)
+
+# Load the countries data from rnaturalearth
+world <- ne_countries(scale = "medium", returnclass = "sf")
+
+# Perform spatial join to add country names to the data
+df_with_country <- st_join(df_sf, world["name"])
+
+# Extract the coordinates back into separate columns
+df_with_country <- df_with_country %>%
+  mutate(lon = st_coordinates(.)[,1], 
+         lat = st_coordinates(.)[,2])
+
+# Convert back to a data.table
+df <- setDT(df_with_country)
+
+# Rename the country column to something more descriptive
+setnames(df, "name", "country")
+
+# Apply the categorize_location function to create a new column
+df[, geographical_zone := mapply(categorize_location, lat, lon)]
+
+# Ensure the data.table has the necessary columns for visualization
+df_clean <- df[, .(year, lon, lat, mean_anomaly, country, geographical_zone)]
+```
+
 # 2. Data Visualization
 
 ```{r}
@@ -320,6 +352,8 @@ df_clean$mean_anomaly <- df_clean$mean_anomaly * 10
 max <- max(df_clean$mean_anomaly)
 min <- -max
 ```
+
+### 2.1.1 Interactive Choropleth Map
 
 ```{r}
 #| warning: false
@@ -374,4 +408,76 @@ fig <- fig %>% layout(
 )
 
 fig
+```
+
+### 2.1.2 Improved Interactive Chloropleth Map with Geographical Information
+
+```{r}
+#| warning: false
+#| echo: false
+#| label: interactive-choropleth-map
+
+
+# Define color ramp for the plot
+col3 <- colorRamp(c("#0C7BDC", "white", "#FFC20A"))
+
+# Define the map projection and layout settings
+g <- list(
+  projection = list(type = "natural earth"),
+  showland = TRUE,
+  landcolor = toRGB("gray95"),
+  subunitcolor = toRGB("gray85"),
+  countrycolor = toRGB("gray85"),
+  bgcolor = toRGB("gray70"),
+  countrywidth = 1,
+  subunitwidth = 1
+)
+
+# Round mean anomaly to 2 decimal places
+df_clean$mean_anomaly <- round(df_clean$mean_anomaly, 2)
+
+# Create the plotly figure
+fig <- plot_geo(df_clean, lat = ~lat, lon = ~lon, frame = ~year)
+
+# Add markers to the plot with hover information
+fig <- fig %>%
+  add_markers(
+    text = ~ paste("Longitude: ", lon, "<br>",
+                   "Latitude: ", lat, "<br>",
+                   "Country: ", country, "<br>",
+                   "Zone: ", geographical_zone, "<br>",
+                   "Mean Anomaly: ", format(mean_anomaly, digits = 2), "°C"),
+    hoverinfo = "text",
+    symbol = I("square"),
+    size = I(8),
+    alpha = 0.4,
+    color = ~mean_anomaly,
+    colors = col3
+  ) %>%
+  colorbar(
+    title = "Mean Anomaly (°C)", 
+    limits = c(-8, 8), 
+    tickvals = seq(-8, 8, 1), 
+    ticktext = seq(-8, 8, 1), 
+    len = 0.9,
+    orientation = "h", 
+    x = 0.41, 
+    y = -0.05, 
+    thickness = 20, 
+    thicknessmode = "pixels", 
+    outlinecolor = "black", 
+    outlinewidth = 2
+  )
+
+# Layout settings for the plot
+fig <- fig %>% layout(
+  title = "Temperature Anomaly (based on 1951 - 1980 mean)",
+  geo = g,
+  plot_bgcolor = "rgb(105,105,105)" # Set plot background color
+)
+
+# Show the plot
+fig
+
+
 ```
