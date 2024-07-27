@@ -35,9 +35,54 @@ library(naniar)
 #| echo: false
 
 df_clean <- read.csv("data/df_filtered.csv")
+
+df_clean$mean_anomaly <- round(df_clean$mean_anomaly, 2)
+df_clean$mean_anomaly <- df_clean$mean_anomaly * 10
+
+max <- max(df_clean$mean_anomaly)
+min <- -max
 ```
 
 # Data Visualization
 
 
+```{r}
+#| warning: false
+#| echo: false
+#| label: plot-1
 
+col3 <- colorRamp(c("#0C7BDC", "white", "#FFC20A"))
+
+g <- list(
+  projection = list(type = 'natural earth'),
+  showland = TRUE,
+  landcolor = toRGB("gray95"),
+  subunitcolor = toRGB("gray85"),
+  countrycolor = toRGB("gray85"),
+  bgcolor = toRGB("gray70"),
+  countrywidth = 1,
+  subunitwidth = 1
+)
+
+fig <- plot_geo(df_clean, lat = ~lat, lon = ~lon, frame = ~year)
+
+fig <- fig %>% add_markers(
+    text = ~paste(lon, lat, "<br />"),
+    symbol = I("square"), 
+    size = I(8),
+    alpha = 0.4,
+    color = ~mean_anomaly, 
+    colors = col3,
+  ) %>% colorbar(title = "Mean Anomaly (°C)", limits = c(-8, 8), tickvals = seq(-8, 8, 1), ticktext = seq(-8, 8, 1),len = 0.9,
+                 orientation = "h",x=0.41,y=-0.05,thickness=20,thicknessmode="pixels",outlinecolor="black",outlinewidth=2)
+
+
+
+fig <- fig %>% layout(
+    title = 'Temperature Anomaly (based on 1951 - 1980 mean)',
+    geo = g,
+    plot_bgcolor = 'rgb(105,105,105)'  # Set plot background color
+  )
+
+fig
+```
