@@ -26,6 +26,7 @@ library(rnaturalearth)
 library(zoo)
 library(naniar)
 library(data.table)
+library(scales)
 ```
 
 ```{r}
@@ -306,7 +307,6 @@ ggplot(df_combined_summary, aes(x = year, y = mean_anomaly, color = type)) +
   ) +
   theme_minimal()
 ```
-
 # 2. Data Visualization
 
 ```{r}
@@ -314,11 +314,12 @@ ggplot(df_combined_summary, aes(x = year, y = mean_anomaly, color = type)) +
 #| echo: false
 #| label: format-mean-anomaly
 
+
 df_clean$mean_anomaly <- round(df_clean$mean_anomaly, 2)
-df_clean$mean_anomaly <- df_clean$mean_anomaly * 10
 
 max <- max(df_clean$mean_anomaly)
 min <- -max
+
 ```
 
 ```{r}
@@ -326,7 +327,17 @@ min <- -max
 #| echo: false
 #| label: interactive-choropleth-map
 
-col3 <- colorRamp(c("#0C7BDC", "white", "#FFC20A"))
+colors <- c("#5D3A9B", "#0C7BDC", "white", "#FFC20A", "#E66100")
+positions <- c(0,0.0625, 0.125, 0.25, 1)
+
+col_func <- colorRampPalette(colors)
+
+# Adjust the colors using scales::rescale to match the positions
+adjusted_colors <- col_func(length(positions))
+adjusted_positions <- rescale(positions, to = c(0, 1))
+
+named_colors <- setNames(adjusted_colors, adjusted_positions)
+
 
 g <- list(
   projection = list(type = "natural earth"),
@@ -343,12 +354,12 @@ fig <- plot_geo(df_clean, lat = ~lat, lon = ~lon, frame = ~year)
 
 fig <- fig %>%
   add_markers(
-    text = ~ paste(lon, lat, "<br />"),
+    text = ~ paste(lon, lat, "<br />", "Mean Anomaly: ", mean_anomaly, "°C"),
     symbol = I("square"),
     size = I(8),
     alpha = 0.4,
     color = ~mean_anomaly,
-    colors = col3,
+    colors = named_colors,
   ) %>%
   colorbar(
     title = "Mean Anomaly (°C)", 
@@ -365,11 +376,13 @@ fig <- fig %>%
     outlinewidth = 2
   )
 
+
+
 fig <- fig %>% layout(
   title = "Temperature Anomaly (based on 1951 - 1980 mean)",
-  geo = g,
-  plot_bgcolor = "rgb(105,105,105)" # Set plot background color
+  geo = g
 )
 
 fig
+
 ```
