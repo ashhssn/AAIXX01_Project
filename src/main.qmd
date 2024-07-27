@@ -218,7 +218,7 @@ ggplot(yearly_data, aes(x = year, y = mean_temp_anomaly)) +
 
 ### 1.2.1 Interpolation of missing data
 
-A linear interpolation is performed to fill in the missing values in the `anomaly` column. We chose the linear interpolation method as it is a simple and effective way to estimate missing values in a time series dataset.
+A linear interpolation is performed to fill in the missing values in the `anomaly` column. It is preferred over backward and forward filling, or other techniques, in many applications due to its balanced approach to estimating missing values. Unlike forward filling, which repeats the previous value, or backward filling, which repeats the next value, linear interpolation considers the values on both sides of a missing point, creating a more realistic and smooth transition. This method is particularly advantageous in time series data, such as temperature anomalies, where maintaining the natural progression and trend is crucial for accurate analysis. By connecting missing data points with a straight line, linear interpolation preserves the overall pattern and minimises the introduction of bias, making it a more reliable choice for handling gaps in data.
 ```{r}
 #| warning: false
 #| echo: true
@@ -250,8 +250,7 @@ df_interpolated <- df
 
 ### 1.2.2 Create column for Mean Temp anomaly for each year
 
-We create a new column, `mean_anomaly`, to store the mean temperature anomaly for each year. This will help us to visualize the trend of temperature anomaly over the years.
-
+We create a new column, `mean_anomaly`, to store the mean temperature anomaly for each year. This will help us to visualize the trend of temperature anomaly over the years. In addition, this information can be used to analyse the overall temperature patterns, identify anomalies, and assess the impact of climate change on global temperatures.
 ```{r}
 #| warning: false
 #| echo: true
@@ -269,7 +268,7 @@ df_clean[, year := as.character(year)]
 
 ### 1.2.3 Line Graph for comparison of temperature anomaly trend before and after interpolation
 
-Here, we sample the interpolated `dataframe` again to **speed up** the process of plotting the line graph of before interpolation and after interpolation. This is to see if our interpolation was successful and does not introduce any new patterns.
+Here, we sample the interpolated `dataframe` again to **speed up** the process of plotting the line graph of before interpolation and after interpolation. This will allow us to compare the temperature trends and identify any discrepancies between the two data sets. This visualization enables us to evaluate the effectiveness of the interpolation method and determine its impact on the overall temperature anomaly trend.
 
 ```{r}
 #| warning: false
