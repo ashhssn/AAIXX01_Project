@@ -14,7 +14,7 @@ format:
     footer-color: "9DD9F3"
 ---
 
-# Introduction
+# Introduction 
 
 Climate change, driven by human activities such as burning fossil fuels and deforestation, has led to a significant rise in global temperatures. This warming causes melting ice caps, rising sea levels, and more frequent extreme weather events. The year 2023 was the warmest year since global records began in 1850 at 1.18°C above the 20th century average of 13.9°C^1^. The 10 warmest years in the 174-year record have all occurred during the last decade (2014–2023). The impacts are widespread, affecting ecosystems, human health, agriculture, and water resources.
 
@@ -22,24 +22,25 @@ Despite the overwhelming scientific consensus on climate change, some skeptics p
 
 In this project, we expanded upon a visualization of global temperature anomalies published by the National Oceanic and Atmospheric Administration^1^ (@fig-NOAA). While the original plot effectively summarizes the data, we believe there are several areas where it can be enhanced.
 
-# Original Visualization
+#  Original Visualization
 
-![Land and Sea  Surface Temperature Deviations in 2023 from the 1991-2020 Average Temperature of 14.4°C, published by the NOAA.](./images/NOAA_heatmap.png){#fig-NOAA width="100%"}
+![Original Visualization: Land and Sea  Surface Temperature Deviations in 2023 from the 1991-2020 Average Temperature of 14.4°C, published by the NOAA.](./images/NOAA_heatmap.png){#fig-NOAA width="90%"}
 
 
 # Critical Assessment of the Original Visualization
   
-  1.  Interactivity: The visualization lacks interactive features that would allow users to explore the data further, such as hovering over data points to see exact values and region.
+  1.  Grid and Color Legend: The grid and color legend is rather coarse, which does not allow viewers to distinguish between closer temperature differences and close regions.
   
-  2.  Grid and Colour Legend: The grid and colour legend is rather coarse, which does not allow viewers to distinguish between closer temperature differences and close regions.
-
+  2.  Interactivity: The visualization lacks interactive features that would allow users to explore the data further, such as hovering over data points to see exact values.
+  
+  
 # Suggested Improvements
 
-  1.  Interactive Features: Implement interactive elements that allow users to explore the data in more detail, such as tooltips and filters.
+  1. More Granular Grid and Colour Legend: Use a smaller grid size and more granular colour scale to better differentiate between small temperature anomalies in close regions.
   
-  2. More Granular Grid and Colour Legend: Use a smaller grid size and more granular colour scale to better differentiate between small temperature anomalies in close regions.
+  2.  Interactive Features: Implement interactive elements that allow users to explore the data in more detail, such as tooltips and filters.
   
-  3.  Dynamic Range Slider: Add a dynamic range slider to allow users to zoom into specific periods for detailed analysis. 
+  3.  Dynamic Range Slider and Additional Data: Add a dynamic range slider to allow users to zoom into specific periods for detailed analysis. 
   
   4.  Animation: Add an animation function to display a timelapse of temperature changes from 1960 to 2024, providing a dynamic view of climate change trends.
 
@@ -50,8 +51,6 @@ In this project, we expanded upon a visualization of global temperature anomalie
 The gridded surface air temperature anomaly data was obtained from NASA^3^. The data is in NetCDF format and contains selected series on a regular 2°× 2° grid.
 
 ## Software
-
-We used the Quarto publication framework and the R programming language, along with the following third-party packages:
 
 - **ncdf4**: Handle NetCDF data files
 - **reshape2**: Reshape data for analysis
@@ -92,13 +91,11 @@ We used the Quarto publication framework and the R programming language, along w
 
 # Improved Visualization
 
+![Revised Visualization of Global Temperature Anomalies in 2023](./images/global_temp_anomaly.png){width="110%"}
+
 # Further Improvements
 
-The visualization can be enhanced by showing additional data, such as sea ice cover or atmospheric CO~2~ concentrations. This would illustrate how these factors relate to climate change and provide a more comprehensive view of the issue. 
-
-# Conclusion
-
-In summary, several key enhancements were made to the global temperature anomalies graph to improve its clarity, accessibility, and interactivity. Interactive features such as tooltips and a dynamic range slider were introduced to allow users to explore the data in more detail. These improvements make the graph a more effective tool for communicating the reality and urgency of climate change.
+Currently, the color bar is scaled to the data which is positively skewed. Regions with small positive deviations appear light blue, which can be misleading, and can be improved upon. The visualization can also be enhanced by showing additional data, such as sea ice cover or atmospheric CO~2~ concentrations. This would illustrate how these factors relate to climate change and provide a more comprehensive view of the issue. 
 
 # References
 

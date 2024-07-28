@@ -425,11 +425,11 @@ In this project, we expanded upon a visualization of global temperature anomalie
 = Original Visualization
 <original-visualization>
 #figure([
-#box(width: 100%,image("./images/NOAA_heatmap.png"))
+#box(width: 90%,image("./images/NOAA_heatmap.png"))
 ], caption: figure.caption(
 position: bottom, 
 [
-Land and Sea Surface Temperature Deviations in 2023 from the 1991-2020 Average Temperature of 14.4°C, published by the NOAA.
+Original Visualization: Land and Sea Surface Temperature Deviations in 2023 from the 1991-2020 Average Temperature of 14.4°C, published by the NOAA.
 ]), 
 kind: "quarto-float-fig", 
 supplement: "Figure", 
@@ -440,17 +440,17 @@ numbering: "1",
 
 = Critical Assessment of the Original Visualization
 <critical-assessment-of-the-original-visualization>
-+ Interactivity: The visualization lacks interactive features that would allow users to explore the data further, such as hovering over data points to see exact values and region.
++ Grid and Color Legend: The grid and color legend is rather coarse, which does not allow viewers to distinguish between closer temperature differences and close regions.
 
-+ Grid and Colour Legend: The grid and colour legend is rather coarse, which does not allow viewers to distinguish between closer temperature differences and close regions.
++ Interactivity: The visualization lacks interactive features that would allow users to explore the data further, such as hovering over data points to see exact values.
 
 = Suggested Improvements
 <suggested-improvements>
-+ Interactive Features: Implement interactive elements that allow users to explore the data in more detail, such as tooltips and filters.
-
 + More Granular Grid and Colour Legend: Use a smaller grid size and more granular colour scale to better differentiate between small temperature anomalies in close regions.
 
-+ Dynamic Range Slider: Add a dynamic range slider to allow users to zoom into specific periods for detailed analysis.
++ Interactive Features: Implement interactive elements that allow users to explore the data in more detail, such as tooltips and filters.
+
++ Dynamic Range Slider and Additional Data: Add a dynamic range slider to allow users to zoom into specific periods for detailed analysis.
 
 + Animation: Add an animation function to display a timelapse of temperature changes from 1960 to 2024, providing a dynamic view of climate change trends.
 
@@ -462,8 +462,6 @@ The gridded surface air temperature anomaly data was obtained from NASA#super[3]
 
 == Software
 <software>
-We used the Quarto publication framework and the R programming language, along with the following third-party packages:
-
 - #strong[ncdf4];: Handle NetCDF data files
 - #strong[reshape2];: Reshape data for analysis
 - #strong[plotly];: Interactive data visualization
@@ -503,13 +501,21 @@ We used the Quarto publication framework and the R programming language, along w
 
 = Improved Visualization
 <improved-visualization>
+#figure([
+#box(width: 110%,image("./images/global_temp_anomaly.png"))
+], caption: figure.caption(
+position: bottom, 
+[
+Revised Visualization of Global Temperature Anomalies in 2023
+]), 
+kind: "quarto-float-fig", 
+supplement: "Figure", 
+)
+
+
 = Further Improvements
 <further-improvements>
-The visualization can be enhanced by showing additional data, such as sea ice cover or atmospheric CO#sub[2] concentrations. This would illustrate how these factors relate to climate change and provide a more comprehensive view of the issue.
-
-= Conclusion
-<conclusion>
-In summary, several key enhancements were made to the global temperature anomalies graph to improve its clarity, accessibility, and interactivity. Interactive features such as tooltips and a dynamic range slider were introduced to allow users to explore the data in more detail. These improvements make the graph a more effective tool for communicating the reality and urgency of climate change.
+Currently, the color bar is scaled to the data which is positively skewed. Regions with small positive deviations appear light blue, which can be misleading, and can be improved upon. The visualization can also be enhanced by showing additional data, such as sea ice cover or atmospheric CO#sub[2] concentrations. This would illustrate how these factors relate to climate change and provide a more comprehensive view of the issue.
 
 = References
 <references>
