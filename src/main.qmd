@@ -17,16 +17,18 @@ knitr:
 #| warning: false
 #| echo: false
 
-library(ncdf4)
-library(reshape2)
-library(plotly)
-library(dplyr)
-library(sf)
-library(rnaturalearth)
-library(zoo)
-library(naniar)
-library(data.table)
-library(scales)
+packages <- c("ncdf4", "reshape2", "plotly", "dplyr", "rnaturalearth", "zoo", "scales", "data.table", "sf")
+
+# Function to check if a package is installed, and install it if it is not
+install_if_missing <- function(p) {
+  if (!requireNamespace(p, quietly = TRUE)) {
+    install.packages(p)
+  }
+  library(p, character.only = TRUE)
+}
+
+# Apply the function to each package
+lapply(packages, install_if_missing)
 ```
 
 ```{r}
@@ -371,7 +373,6 @@ g <- list(
   landcolor = toRGB("gray95"),
   subunitcolor = toRGB("gray85"),
   countrycolor = toRGB("gray85"),
-  bgcolor = toRGB("gray70"),
   countrywidth = 1,
   subunitwidth = 1
 )
@@ -380,7 +381,7 @@ fig <- plot_geo(df_with_country, lat = ~lat, lon = ~lon, frame = ~year)
 
 fig <- fig %>%
   add_markers(
-    text = ~ paste("Longtitute: ",lon," Latitute", lat, "<br />", "Mean Anomaly: ", mean_anomaly, "°C", "<br />","Country: ", name, "<br />", "Zone: ", zone),
+    text = ~ paste("Longtitute: ",lon," Latitute: ", lat, "<br />", "Mean Anomaly: ", mean_anomaly, "°C", "<br />","Country: ", name, "<br />", "Zone: ", zone),
     symbol = I("square"),
     size = I(8),
     alpha = 0.4,
@@ -406,8 +407,25 @@ fig <- fig %>%
 
 
 fig <- fig %>% layout(
-  title = "Temperature Anomaly (based on 1951 - 1980 mean)",
-  geo = g
+  title = "Global Temperature Anomaly (with respect to 1950 - 1980 base period)",
+  geo = g,
+  annotations = list(
+    list(
+      x = 0.5,
+      y = -0.4,
+      text = '<a href="https://data.giss.nasa.gov/pub/gistemp/README.txt" target="_blank">Data Source</a>',
+      showarrow = FALSE,
+      xref = 'paper',
+      yref = 'paper',
+      xanchor = 'center',
+      yanchor = 'top',
+      font = list(
+        size = 14,
+        color = "blue"
+      )
+    )
+  ),
+  margin = list(b = 150)  # Adjust bottom margin for the annotation
 )
 
 fig
