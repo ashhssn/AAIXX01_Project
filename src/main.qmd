@@ -12,6 +12,14 @@ knitr:
     message: false
 ---
 
+# Introduction
+
+## Original Visualization
+
+This section presents the original visualization that we will improve upon with data pre-processing. The aim is to enhance the data presentation's clarity, accuracy, and overall effectiveness.
+
+![Original Visualization](main_files/mediabag/critique.png)
+
 ```{r}
 #| label: load-packages
 #| warning: false
@@ -176,14 +184,17 @@ ggplot(missing_data, aes(y = year_month_date, x = 1, fill = missing_count)) +
     title = "Matrix Chart of Missing Values by Time",
     x = "",
     y = "Year-Month",
-    fill = "Missing Values"
+    fill = "Missing Values",
+    caption = "Data Source: https://data.giss.nasa.gov/pub/gistemp/README.txt"
+
   ) +
   theme_minimal() +
   theme(
     axis.text.x = element_blank(),
     axis.ticks.x = element_blank(),
-    axis.text.y = element_text(hjust = 1)
-  )
+    axis.text.y = element_text(hjust = 1),
+    plot.caption = element_text(hjust = 0.5)
+  ) 
 ```
 
 ### 1.1.6 Distribution of temperature anomaly
@@ -196,7 +207,16 @@ We use a `histogram` to visualize the distribution of temperature anomaly in the
 
 ggplot(sample_df, aes(x = anomaly)) +
   geom_histogram(binwidth = 0.1, fill = "blue", color = "black", alpha = 0.7) +
-  labs(title = "Distribution of Temperature Anomaly", x = "Temperature Anomaly", y = "Frequency")
+  labs(
+    title = "Distribution of Temperature Anomaly",
+    x = "Temperature Anomaly",
+    y = "Frequency",
+    caption = "Data Source: https://data.giss.nasa.gov/pub/gistemp/README.txt"
+  ) +
+  theme_minimal() +
+  theme(
+    plot.caption = element_text(hjust = 0.5)
+  )
 ```
 ### 1.1.7 Time series plot of temperature anomaly (by month)
 
@@ -213,7 +233,11 @@ yearly_data <- sample_df %>%
 
 ggplot(yearly_data, aes(x = year, y = mean_temp_anomaly)) +
   geom_line(color = "blue") +
-  labs(title = "Global Average Temperature Anomaly Over Years", x = "Time", y = "Global Average Temperature Anomaly")
+  labs(title = "Global Average Temperature Anomaly Over Years", x = "Time", y = "Global Average Temperature Anomaly", caption = "Data Source: https://data.giss.nasa.gov/pub/gistemp/README.txt") +
+  theme_minimal() +
+  theme(
+    plot.caption = element_text(hjust = 0.5)
+  )
 ```
 
 ## 1.2 Feature Engineering
@@ -303,9 +327,13 @@ ggplot(df_combined_summary, aes(x = year, y = mean_anomaly, color = type)) +
   labs(
     title = "Temperature Anomaly Trend Before and After Interpolation",
     x = "Year",
-    y = "Mean Temperature Anomaly"
+    y = "Mean Temperature Anomaly",
+    caption = "Data Source: https://data.giss.nasa.gov/pub/gistemp/README.txt"
   ) +
-  theme_minimal()
+  theme_minimal() +
+  theme(
+    plot.caption = element_text(hjust = 0.5)
+  )
 ```
 
 ### 1.2.4 Categorize geographical zones
@@ -382,7 +410,6 @@ fig <- plot_geo(df_with_country, lat = ~lat, lon = ~lon, frame = ~year)
 
 fig <- fig %>%
   add_markers(
-    text = ~ paste(lon, lat, "<br />", "Mean Anomaly: ", mean_anomaly, "°C"),
     text = ~ paste("Longtitute: ",lon," Latitute: ", lat, "<br />", "Mean Anomaly: ", mean_anomaly, "°C", "<br />","Country: ", name, "<br />", "Zone: ", zone),
     symbol = I("square"),
     size = I(8),
