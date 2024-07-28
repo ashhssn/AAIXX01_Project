@@ -85,7 +85,7 @@ origin <- as.Date(sub("days since ", "", time_units))
 date <- origin + time
 
 # Apply scale factor and handle missing values
-anomaly <- ifelse(anomaly == fill_value, NA, anomaly) * (scale_factor * 10)
+anomaly <- ifelse(anomaly == fill_value, NA, anomaly) * (scale_factor * 100)
 
 # Reshape the data into a long format dataframe
 df <- expand.grid(lon = lon, lat = lat, time = date)
@@ -313,6 +313,11 @@ ggplot(df_combined_summary, aes(x = year, y = mean_anomaly, color = type)) +
 #| echo: false
 #| label: categorize-geographical-zones
 
+
+df_clean <- df_clean %>%
+  mutate(zone = mapply(categorize_location, lat, lon))
+
+
 # Load country boundaries 
 world <- ne_countries(scale = "medium", returnclass = "sf") 
  
@@ -338,7 +343,7 @@ df_with_country <- df_with_country %>%
 df_with_country$mean_anomaly <- round(df_clean$mean_anomaly, 2)
 
 max <- max(df_with_country$mean_anomaly)
-min <- -max
+min <- min(df_with_country$mean_anomaly)
 
 ```
 
@@ -348,7 +353,7 @@ min <- -max
 #| label: interactive-choropleth-map
 
 colors <- c("#5D3A9B", "#0C7BDC", "white", "#FFC20A", "#E66100")
-positions <- c(0,0.0625, 0.125, 0.25, 1)
+positions <- c(0,0.0625, 0.125, 0.1875, 1)
 
 col_func <- colorRampPalette(colors)
 
@@ -362,6 +367,7 @@ named_colors <- setNames(adjusted_colors, adjusted_positions)
 g <- list(
   projection = list(type = "natural earth"),
   showland = TRUE,
+  resolution = 50,
   landcolor = toRGB("gray95"),
   subunitcolor = toRGB("gray85"),
   countrycolor = toRGB("gray85"),
@@ -374,18 +380,19 @@ fig <- plot_geo(df_with_country, lat = ~lat, lon = ~lon, frame = ~year)
 
 fig <- fig %>%
   add_markers(
-    text = ~ paste(lon, lat, "<br />", "Mean Anomaly: ", mean_anomaly, "°C", "<br />","Country: ", name),
+    text = ~ paste("Longtitute: ",lon," Latitute", lat, "<br />", "Mean Anomaly: ", mean_anomaly, "°C", "<br />","Country: ", name, "<br />", "Zone: ", zone),
     symbol = I("square"),
     size = I(8),
     alpha = 0.4,
     color = ~mean_anomaly,
     colors = named_colors,
+    hoverinfo = "text"
   ) %>%
   colorbar(
     title = "Mean Anomaly (°C)", 
-    limits = c(-8, 8), 
-    tickvals = seq(-8, 8, 1), 
-    ticktext = seq(-8, 8, 1), 
+    limits = c(min, max), 
+    tickvals = seq(min, max, 1), 
+    ticktext = sprintf("%.1f", seq(min, max, by = 1)),
     len = 0.9,
     orientation = "h", 
     x = 0.41, 
