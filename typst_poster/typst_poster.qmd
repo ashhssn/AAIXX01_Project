@@ -29,21 +29,19 @@ In this project, we expanded upon a visualization of global temperature anomalie
 
 # Critical Assessment of the Original Visualization
   
-  1.  Comparison to Baseline: The graph shows anomalies relative to a baseline, but it does not specify what this baseline is.
+  1.  Interactivity: The visualization lacks interactive features that would allow users to explore the data further, such as hovering over data points to see exact values and region.
   
-  2.  Interactivity: The visualization lacks interactive features that would allow users to explore the data further, such as hovering over data points to see exact values and region.
-  
-  3. Grid and Colour Legend: The grid and colour legend is rather coarse, which does not allow viewers to distinguish between closer temperature differences and close regions.
+  2.  Grid and Colour Legend: The grid and colour legend is rather coarse, which does not allow viewers to distinguish between closer temperature differences and close regions.
 
 # Suggested Improvements
 
-  1.  Baseline Information: Clearly indicate the baseline temperature to provide a reference point for interpreting the data.
+  1.  Interactive Features: Implement interactive elements that allow users to explore the data in more detail, such as tooltips and filters.
   
-  2.  Interactive Features: Implement interactive elements that allow users to explore the data in more detail, such as tooltips and filters.
+  2. More Granular Grid and Colour Legend: Use a smaller grid size and more granular colour scale to better differentiate between small temperature anomalies in close regions.
   
-  3. More Granular Grid and Colour Legend: Use a smaller grid size and more granular colour scale to better differentiate between small temperature anomalies in close regions.
+  3.  Dynamic Range Slider: Add a dynamic range slider to allow users to zoom into specific periods for detailed analysis. 
   
-  3.  Dynamic Range Slider: A dynamic range slider will be added, allowing users to zoom into specific periods for detailed analysis or display a timelapse of temperature changes from 1930 to 2023.
+  4.  Animation: Add an animation function to display a timelapse of temperature changes from 1960 to 2024, providing a dynamic view of climate change trends.
 
 # Implementation
 
@@ -55,14 +53,42 @@ The gridded surface air temperature anomaly data was obtained from NASA^3^. The 
 
 We used the Quarto publication framework and the R programming language, along with the following third-party packages:
 
-+   ncdf4: Reads scientific data (NetCDF format)
-+   reshape2: Reshapes data (wide to long, etc.)
-+   plotly: Creates interactive visualizations (charts, maps)
-+   dplyr: Manipulates data (filter, select, etc.)
-+   sf: Works with spatial data (Shapefiles)
-+   rnaturalearth: Provides pre-made geographic datasets (maps)
+- **ncdf4**: Handle NetCDF data files
+- **reshape2**: Reshape data for analysis
+- **plotly**: Interactive data visualization
+- **dplyr**: Data manipulation and transformation
+- **rnaturalearth**: Provides pre-made geographic datasets (maps)
+- **zoo**: Time series data management
+- **data.table**: Fast data manipulation
+- **sf**: Work with spatial data (Shapefiles)
 
 ## Workflow 
+
+### Exploratory Data Analysis
+
++   Filter the data to include only the past five decades (from 1960 to 2024).
++   Randomly sample 1% of the data to speed up the initial exploration.
++   Count the number of missing values (NAs) in each column of the dataframe.
++   Visualize the pattern of missing values over time with a tile chart.
++   Verify data integrity using:
+    +   A histogram to visualize the distribution of temperature anomalies in the sampled data.
+    +   A time series plot to visualize the trend of the global average temperature anomaly by month over the past five decades.
+
+### Feature Engineering
+
++   Perform linear interpolation to fill in missing values in the anomaly column.
++   Compare the data before and after interpolation to ensure completeness.
++   Calculate the mean temperature anomaly of each longitude, and latitude for each year.
++   Plot a line graph to compare the temperature trends before and after interpolation, our interpolation was successful and does not introduce any new patterns.
++   Round the mean_anomaly data to two decimal places for clarity.
+
+### Data Visualization
+
++   Define Colors: Create a color palette representing temperature anomalies, adjusted for smooth gradients.
++   Map Properties: Configure projection, land color, subunit color, country color, and background color for readability.
++   Add Markers: Place markers on the map to show mean temperature anomalies at different locations, with hover-over details.
++   Add Colorbar: Include a colorbar to indicate the anomaly values, customized for clarity and fitting within the map layout.
++   Layout: Set the title and overall layout properties for an informative and visually appealing map.
 
 # Improved Visualization
 
@@ -72,7 +98,7 @@ The visualization can be enhanced by showing additional data, such as sea ice co
 
 # Conclusion
 
-In summary, several key enhancements were made to the global temperature anomalies graph to improve its clarity, accessibility, and interactivity. The baseline temperature was clearly indicated to provide a reference point for interpreting the data. Interactive features such as tooltips and filters, along with a dynamic range slider, were introduced to allow users to explore the data in more detail and focus on specific periods. These improvements make the graph a more effective tool for communicating the reality and urgency of climate change.
+In summary, several key enhancements were made to the global temperature anomalies graph to improve its clarity, accessibility, and interactivity. Interactive features such as tooltips and a dynamic range slider were introduced to allow users to explore the data in more detail. These improvements make the graph a more effective tool for communicating the reality and urgency of climate change.
 
 # References
 
