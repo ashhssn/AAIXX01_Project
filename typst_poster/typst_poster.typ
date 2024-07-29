@@ -440,19 +440,19 @@ numbering: "1",
 
 = Critical Assessment of the Original Visualization
 <critical-assessment-of-the-original-visualization>
-+ Grid and Color Legend: The grid and color legend is rather coarse, which does not allow viewers to distinguish between closer temperature differences and close regions.
++ #strong[Grid and Color Legend];: The grid and color legend is rather coarse, which does not allow viewers to distinguish between closer temperature differences and close regions.
 
-+ Interactivity: The visualization lacks interactive features that would allow users to explore the data further, such as hovering over data points to see exact values.
++ #strong[Interactivity];: The visualization lacks interactive features that would allow users to explore the data further, such as hovering over data points to see exact values.
 
 = Suggested Improvements
 <suggested-improvements>
-+ More Granular Grid and Colour Legend: Use a smaller grid size and more granular colour scale to better differentiate between small temperature anomalies in close regions.
++ #strong[More Granular Grid and Colour Legend];: Use a smaller grid size and more granular colour scale to better differentiate between small temperature anomalies in close regions.
 
-+ Interactive Features: Implement interactive elements that allow users to explore the data in more detail, such as tooltips and filters.
++ #strong[Interactive Features];: Implement interactive elements that allow users to explore the data in more detail, such as tooltips and filters.
 
-+ Dynamic Range Slider and Additional Data: Add a dynamic range slider to allow users to zoom into specific periods for detailed analysis.
++ #strong[Dynamic Range Slider and Additional Data];: Add a dynamic range slider to allow users to zoom into specific periods for detailed analysis.
 
-+ Animation: Add an animation function to display a timelapse of temperature changes from 1960 to 2024, providing a dynamic view of climate change trends.
++ #strong[Animation];: Add an animation function to display a timelapse of temperature changes from 1960 to 2024, providing a dynamic view of climate change trends.
 
 = Implementation
 <implementation>
@@ -469,27 +469,26 @@ The gridded surface air temperature anomaly data was obtained from NASA#super[3]
 - #strong[rnaturalearth];: Provides pre-made geographic datasets \(maps)
 - #strong[zoo];: Time series data management
 - #strong[data.table];: Fast data manipulation
+- #strong[scales];: Scale functions for visualizations
 - #strong[sf];: Work with spatial data \(Shapefiles)
 
 == Workflow
 <workflow>
 === Exploratory Data Analysis
 <exploratory-data-analysis>
-- Filter the data to include only the past five decades \(from 1960 to 2024).
+- Filter the data to include only the past six decades \(from 1960 to 2024).
 - Randomly sample 1% of the data to speed up the initial exploration.
 - Count the number of missing values \(NAs) in each column of the dataframe.
 - Visualize the pattern of missing values over time with a tile chart.
-- Verify data integrity using:
-  - A histogram to visualize the distribution of temperature anomalies in the sampled data.
-  - A time series plot to visualize the trend of the global average temperature anomaly by month over the past five decades.
+- Verify data integrity using a histogram to visualize distribution of temperature anomalies, and time-series plot to visualize trend of global average temperature anomaly over the years.
 
 === Feature Engineering
 <feature-engineering>
 - Perform linear interpolation to fill in missing values in the anomaly column.
 - Compare the data before and after interpolation to ensure completeness.
-- Calculate the mean temperature anomaly of each longitude, and latitude for each year.
+- Create a new column for the mean temperature anomaly grouped by longitude, latitude and year.
 - Plot a line graph to compare the temperature trends before and after interpolation, our interpolation was successful and does not introduce any new patterns.
-- Round the mean\_anomaly data to two decimal places for clarity.
+- Create a new column for country and geographical zone.
 
 === Data Visualization
 <data-visualization>
@@ -502,7 +501,7 @@ The gridded surface air temperature anomaly data was obtained from NASA#super[3]
 = Improved Visualization
 <improved-visualization>
 #figure([
-#box(width: 110%,image("./images/global_temp_anomaly.png"))
+#box(width: 110%,image("./images/choropleth_map.png"))
 ], caption: figure.caption(
 position: bottom, 
 [
