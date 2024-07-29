@@ -401,14 +401,18 @@ g <- list(
   resolution = 50,
   landcolor = toRGB("gray95"),
   subunitcolor = toRGB("gray85"),
-  countrycolor = toRGB("gray85"),
-  countrywidth = 1,
+  countrycolor = toRGB("black"),
+  countrywidth = 4,
   subunitwidth = 1
 )
 
-fig <- plot_geo(df_with_country, lat = ~lat, lon = ~lon, frame = ~year)
-
-fig <- fig %>%
+fig <- 
+  plot_geo(
+  df_with_country, 
+  lat = ~lat, 
+  lon = ~lon, 
+  frame = ~year
+  ) %>%
   add_markers(
     text = ~ paste("Longtitute: ",lon," Latitute: ", lat, "<br />", "Mean Anomaly: ", mean_anomaly, "°C", "<br />","Country: ", name, "<br />", "Zone: ", zone),
     symbol = I("square"),
@@ -431,14 +435,12 @@ fig <- fig %>%
     thicknessmode = "pixels", 
     outlinecolor = "black", 
     outlinewidth = 2
-  )
-
-
-
-fig <- fig %>% layout(
+  ) %>% 
+  layout(
   title = "Temperature Anomaly (based on 1951 - 1980 mean)",
   geo = g,
-  title = "Global Temperature Anomaly (with respect to 1950 - 1980 base period)",
+  title = list(text="Global Temperature Anomaly (with respect to 1950 - 1980 base period)",
+               font=list(color="black", size=18)),
   geo = g,
   annotations = list(
     list(
