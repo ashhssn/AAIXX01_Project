@@ -12,14 +12,6 @@ knitr:
     message: false
 ---
 
-# Introduction
-
-## Original Visualization
-
-This section presents the original visualization that we will improve upon with data pre-processing. The aim is to enhance the data presentation's clarity, accuracy, and overall effectiveness.
-
-![Original Visualization](main_files/mediabag/critique.png)
-
 ```{r}
 #| label: load-packages
 #| warning: false
@@ -65,11 +57,12 @@ categorize_location <- function(lat, lon) {
 
 ## 1.1 Exploratory Data Analysis
 
-Before cleaning our dataset, we need to first perform EDA to understand the structure of our data. We will load the data, slice it to the past 5 decades, and check for missing values. We will also visualize the missing values to understand the pattern of missingness.
+Before cleaning our dataset, we need to first perform EDA to understand the structure of our data. We will load the data, slice it to the past 6 decades, and check for missing values. We will also visualize the missing values to understand the pattern of missingness.
 
 ### 1.1.1 Load data and assign to dataframe
 
 We can use the `head()` method to inspect the first few rows of the dataframe.
+
 ```{r}
 #| warning: false
 #| echo: true
@@ -112,7 +105,8 @@ head(df)
 
 ### 1.1.2 Slice data
 
-For this project, we are only interested in data for the past 5 decades.
+For this project, we are only interested in data for the past 6 decades.
+
 ```{r}
 #| warning: false
 #| echo: true
@@ -151,7 +145,7 @@ sample_df <- df %>% sample_frac(0.01)
 summary(sample_df)
 ```
 
-### 1.1.5 Pattern of missing values
+### 1.1.5 Pattern of missing values {#pattern-of-missing-values}
 
 We use a matrix chart to visualize the pattern of missing values by time. This will help us understand if there are any specific time periods with more missing values. Additionally, it can provide us information on the ***type of missingness*** in the dataset.
 
@@ -200,6 +194,7 @@ ggplot(missing_data, aes(y = year_month_date, x = 1, fill = missing_count)) +
 ### 1.1.6 Distribution of temperature anomaly
 
 We use a `histogram` to visualize the distribution of temperature anomaly in the sampled data. This will help us understand the spread of temperature anomalies in the dataset.
+
 ```{r}
 #| warning: false
 #| echo: true
@@ -218,9 +213,11 @@ ggplot(sample_df, aes(x = anomaly)) +
     plot.caption = element_text(hjust = 0.5)
   )
 ```
+
 ### 1.1.7 Time series plot of temperature anomaly (by month)
 
-To understand the trend of temperature anomaly over time, we plot a time series graph of the global average temperature anomaly by month. This will help us visualize the changes in temperature anomaly over the past 5 decades. 
+To understand the trend of temperature anomaly over time, we plot a time series graph of the global average temperature anomaly by month. This will help us visualize the changes in temperature anomaly over the past 6 decades.
+
 ```{r}
 #| warning: false
 #| echo: true
@@ -245,6 +242,7 @@ ggplot(yearly_data, aes(x = year, y = mean_temp_anomaly)) +
 ### 1.2.1 Interpolation of missing data
 
 A linear interpolation is performed to fill in the missing values in the `anomaly` column. It is preferred over backward and forward filling, or other techniques, in many applications due to its balanced approach to estimating missing values. Unlike forward filling, which repeats the previous value, or backward filling, which repeats the next value, linear interpolation considers the values on both sides of a missing point, creating a more realistic and smooth transition. This method is particularly advantageous in time series data, such as temperature anomalies, where maintaining the natural progression and trend is crucial for accurate analysis. By connecting missing data points with a straight line, linear interpolation preserves the overall pattern and minimises the introduction of bias, making it a more reliable choice for handling gaps in data.
+
 ```{r}
 #| warning: false
 #| echo: true
@@ -277,6 +275,7 @@ df_interpolated <- df
 ### 1.2.2 Create column for Mean Temp anomaly for each year
 
 We create a new column, `mean_anomaly`, to store the mean temperature anomaly for each year. This will help us to visualize the trend of temperature anomaly over the years. In addition, this information can be used to analyse the overall temperature patterns, identify anomalies, and assess the impact of climate change on global temperatures.
+
 ```{r}
 #| warning: false
 #| echo: true
@@ -337,6 +336,7 @@ ggplot(df_combined_summary, aes(x = year, y = mean_anomaly, color = type)) +
 ```
 
 ### 1.2.4 Categorize geographical zones
+
 ```{r}
 #| warning: false
 #| echo: false
@@ -375,7 +375,6 @@ max <- max(df_with_country$mean_anomaly)
 min <- min(df_with_country$mean_anomaly)
 
 ```
-
 
 ```{r}
 #| warning: false
